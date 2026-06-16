@@ -1,0 +1,12 @@
+{
+    "title": "CAG Deal Feed",
+    "description": "Renders the curated multi-platform deal feed from the CAG Workers app (deals.cheapassgamer.com) as a XenForo widget. Cron-driven cache for fast page loads; live filter UI for Date / Type / Platform / Store.",
+    "version_id": 1000010,
+    "version_string": "1.0.0 Alpha 1",
+    "dev": "CAG",
+    "icon": "fa-fire",
+    "require": {
+        "XF": [2020010, "2.2.0+"],
+        "php": ["8.1.0", "PHP 8.1.0+"]
+    }
+}

@@ -1,0 +1,266 @@
+<xf:if is="$deals">
+<style>
+.cag-df-wrap { background:#0a0a0a; color:#becab9; padding:18px; border-radius:12px; font-family:'Space Grotesk','Inter',-apple-system,BlinkMacSystemFont,Arial,sans-serif; box-sizing:border-box; }
+.cag-df-wrap * { box-sizing:border-box; }
+.cag-df-header { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+.cag-df-title { margin:0; font-size:18px; font-weight:900; color:#28dc6e; letter-spacing:-0.3px; }
+.cag-df-filters { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+.cag-df-btn { padding:6px 14px; border-radius:9999px; font-size:12px; font-weight:700; border:1px solid #3f4a3c; background:#1f2020; color:#becab9; cursor:pointer; transition:all 0.15s; white-space:nowrap; font-family:inherit; }
+.cag-df-btn:hover { color:#e4e2e1; border-color:#899484; }
+.cag-df-btn.active { border-color:#28dc6e; color:#28dc6e; }
+.cag-df-btn-narrow { padding:6px 9px; }
+.cag-df-dropdown { position:relative; }
+.cag-df-panel { display:none; position:absolute; top:calc(100% + 6px); left:0; z-index:200; background:#1f2020; border:1px solid #3f4a3c; border-radius:10px; min-width:170px; box-shadow:0 8px 28px rgba(0,0,0,0.6); max-height:65vh; overflow-y:auto; }
+.cag-df-panel.open { display:block; }
+.cag-df-panel.align-right { left:auto; right:0; }
+.cag-df-item { display:flex; align-items:center; gap:9px; padding:8px 14px; cursor:pointer; font-size:13px; color:#becab9; text-decoration:none; user-select:none; }
+.cag-df-item:hover { background:#2a2a2a; color:#e4e2e1; }
+.cag-df-item input[type=checkbox] { accent-color:#28dc6e; width:14px; height:14px; flex-shrink:0; }
+.cag-df-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:12px; }
+.cag-df-card { background:#141414; border:1px solid #262626; border-radius:12px; overflow:hidden; transition:transform 0.2s, border-color 0.2s; display:flex; flex-direction:column; }
+.cag-df-card:hover { transform:translateY(-2px); border-color:#3f4a3c; }
+.cag-df-imglink { display:block; aspect-ratio:16/10; background:#0a0a0a; overflow:hidden; }
+.cag-df-imglink img { width:100%; height:100%; object-fit:cover; object-position:top; display:block; }
+.cag-df-body { padding:12px; display:flex; flex-direction:column; gap:8px; flex:1; }
+.cag-df-card h4 { font-size:14px; font-weight:700; color:#e4e2e1; margin:0; line-height:1.3; font-family:inherit; }
+.cag-df-meta { display:flex; align-items:baseline; gap:6px; flex-wrap:wrap; }
+.cag-df-price { font-size:16px; font-weight:900; color:#28dc6e; font-family:inherit; }
+.cag-df-retailer { font-size:12px; color:#899484; }
+.cag-df-tags { display:flex; gap:4px; flex-wrap:wrap; margin-top:auto; }
+.cag-df-tag { padding:2px 8px; font-size:10px; font-weight:800; border-radius:4px; letter-spacing:0.3px; }
+.cag-df-tag.pc { background:#f7941d; color:#0a0a0a; }
+.cag-df-tag.playstation { background:#006fcd; color:#fff; }
+.cag-df-tag.nintendo { background:#e60012; color:#fff; }
+.cag-df-tag.xbox { background:#107c10; color:#fff; }
+.cag-df-tag.merch { background:#28dc6e; color:#0a0a0a; }
+.cag-df-empty { grid-column:1 / -1; padding:30px; text-align:center; color:#899484; font-size:13px; }
+.cag-df-error { grid-column:1 / -1; padding:30px; text-align:center; color:#ef4444; font-size:13px; }
+</style>
+
+<div class="cag-df-wrap" id="cag-df-root">
+    <div class="cag-df-header">
+        <h3 class="cag-df-title">{$title}</h3>
+        <div class="cag-df-filters">
+            <div class="cag-df-dropdown">
+                <button type="button" class="cag-df-btn cag-df-btn-narrow active" id="cag-df-date-btn">48h &#9662;</button>
+                <div class="cag-df-panel" id="cag-df-date-panel">
+                    <a href="#" class="cag-df-item" data-hours="24">24h</a>
+                    <a href="#" class="cag-df-item" data-hours="48">48h</a>
+                    <a href="#" class="cag-df-item" data-days="7">7d</a>
+                    <a href="#" class="cag-df-item" data-days="30">30d</a>
+                </div>
+            </div>
+            <div class="cag-df-dropdown">
+                <button type="button" class="cag-df-btn cag-df-btn-narrow" id="cag-df-type-btn">Type &#9662;</button>
+                <div class="cag-df-panel" id="cag-df-type-panel">
+                    <label class="cag-df-item"><input type="checkbox" value="deals" data-group="type"> Deals</label>
+                    <label class="cag-df-item"><input type="checkbox" value="news" data-group="type"> News</label>
+                </div>
+            </div>
+            <div class="cag-df-dropdown">
+                <button type="button" class="cag-df-btn" id="cag-df-plat-btn">Platform &#9662;</button>
+                <div class="cag-df-panel align-right" id="cag-df-plat-panel">
+                    <label class="cag-df-item"><input type="checkbox" value="nintendo" data-group="platform"> Nintendo</label>
+                    <label class="cag-df-item"><input type="checkbox" value="pc" data-group="platform"> PC / Steam</label>
+                    <label class="cag-df-item"><input type="checkbox" value="playstation" data-group="platform"> PlayStation</label>
+                    <label class="cag-df-item"><input type="checkbox" value="xbox" data-group="platform"> Xbox</label>
+                    <label class="cag-df-item"><input type="checkbox" value="merch" data-group="platform"> Merch</label>
+                </div>
+            </div>
+            <div class="cag-df-dropdown">
+                <button type="button" class="cag-df-btn" id="cag-df-store-btn">Store &#9662;</button>
+                <div class="cag-df-panel align-right" id="cag-df-store-panel"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="cag-df-grid" id="cag-df-grid">
+        <xf:foreach loop="$deals" value="$deal">
+            <xf:if is="$deal.image_url">
+                <div class="cag-df-card">
+                    <a class="cag-df-imglink" href="{$deal.deal_link}" target="_blank" rel="noopener">
+                        <img src="{$deal.image_url}" alt="" loading="lazy"/>
+                    </a>
+                    <div class="cag-df-body">
+                        <h4>{$deal.title}</h4>
+                        <div class="cag-df-meta">
+                            <xf:if is="$deal.price"><span class="cag-df-price">{$deal.price}</span></xf:if>
+                            <xf:if is="$deal.retailer"><span class="cag-df-retailer">{$deal.retailer}</span></xf:if>
+                        </div>
+                    </div>
+                </div>
+            </xf:if>
+        </xf:foreach>
+    </div>
+
+    <script type="application/json" id="cag-df-initial">{{ json($deals) }}</script>
+</div>
+
+<script>
+(function() {
+    var root = document.getElementById('cag-df-root');
+    if (!root) return;
+    var grid = document.getElementById('cag-df-grid');
+    var dateBtn = document.getElementById('cag-df-date-btn');
+
+    var allDeals = [];
+    try {
+        var initialEl = document.getElementById('cag-df-initial');
+        if (initialEl) allDeals = JSON.parse(initialEl.textContent || '[]');
+    } catch (e) { allDeals = []; }
+
+    var selectedTypes = new Set();
+    var selectedPlatforms = new Set();
+    var selectedRetailers = new Set();
+
+    function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+
+    function getPlatforms(title, retailer) {
+        var t = (title || '') + ' ' + (retailer || '');
+        var p = [];
+        if (/\bPC(?:DD)?\b|\bPCDD\b|\bSteam\b/i.test(t)) p.push('pc');
+        if (/\bPS[45]\b|\bPlayStation\b|\bPSN\b/i.test(t)) p.push('playstation');
+        if (/\bSwitch\b|\beShop\b|\bNintendo\b|\(S2?(?:\/S2)?\)/i.test(t)) p.push('nintendo');
+        if (/\bXbox\b|\bGame Pass\b|\(XB|[\/\(]X(?:1|S)?\)/i.test(t)) p.push('xbox');
+        if (/\bshirt\b|\bfigure\b|\bplush\b|\bfunko\b|\blego\b|\bstatue\b|\bpin\b|\btoy\b|\bmerch\b|box.?lunch|big bad toy/i.test(t)) p.push('merch');
+        return p;
+    }
+
+    var PLAT_LABEL = { pc:'PC', playstation:'PlayStation', nintendo:'Nintendo', xbox:'Xbox', merch:'Merch' };
+
+    function normalizeRetailer(r) {
+        if (!r) return null;
+        r = r.replace(/\s+(?:w\/|with\s+code|use\s+code|promo\s+code?|coupon(?:\s+code)?)\s*.*/i, '').trim();
+        r = r.replace(/\..*/, '').replace(/#ad\b/gi, '').replace(/[.,\s]+$/, '').trim();
+        if (/^\d/.test(r)) return null;
+        if (/\b(?:am|pm|noon|midnight|et|pt|ct|mt|est|pst|cst|mst|edt|pdt|cdt|mdt)\b/i.test(r)) return null;
+        return r || null;
+    }
+
+    function renderCard(d) {
+        if (!d.image_url) return '';
+        var title = esc(d.title || '');
+        var price = d.price ? '<span class="cag-df-price">' + esc(d.price) + '</span>' : '';
+        var retailer = d.retailer ? '<span class="cag-df-retailer">' + esc(d.retailer) + '</span>' : '';
+        var tagsHtml = '';
+        getPlatforms(d.title || '', d.retailer || '').forEach(function(p) {
+            tagsHtml += '<span class="cag-df-tag ' + p + '">' + esc(PLAT_LABEL[p]) + '</span>';
+        });
+        var tags = tagsHtml ? '<div class="cag-df-tags">' + tagsHtml + '</div>' : '';
+        var link = esc(d.deal_link || '#');
+        return ''
+            + '<div class="cag-df-card">'
+            +   '<a class="cag-df-imglink" href="' + link + '" target="_blank" rel="noopener">'
+            +     '<img src="' + esc(d.image_url) + '" alt="" loading="lazy"/>'
+            +   '</a>'
+            +   '<div class="cag-df-body">'
+            +     '<h4>' + title + '</h4>'
+            +     '<div class="cag-df-meta">' + price + retailer + '</div>'
+            +     tags
+            +   '</div>'
+            + '</div>';
+    }
+
+    function renderGrid(deals) {
+        if (!deals.length) { grid.innerHTML = '<div class="cag-df-empty">No deals match these filters.</div>'; return; }
+        grid.innerHTML = deals.map(renderCard).join('');
+    }
+
+    function getTopRetailers() {
+        var counts = {};
+        allDeals.forEach(function(d) {
+            var r = normalizeRetailer(d.retailer);
+            if (r) counts[r] = (counts[r] || 0) + 1;
+        });
+        return Object.keys(counts).sort(function(a, b) { return counts[b] - counts[a]; }).slice(0, 25);
+    }
+
+    function renderRetailerPanel() {
+        var sorted = getTopRetailers().sort(function(a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+        var html = '';
+        sorted.forEach(function(r) {
+            var checked = selectedRetailers.has(r) ? ' checked' : '';
+            html += '<label class="cag-df-item"><input type="checkbox" value="' + esc(r) + '" data-group="retailer"' + checked + '> ' + esc(r) + '</label>';
+        });
+        document.getElementById('cag-df-store-panel').innerHTML = html;
+    }
+
+    function applyFilter() {
+        renderGrid(allDeals.filter(function(d) {
+            if (!d.image_url) return false;
+            var platformOk = selectedPlatforms.size === 0 ||
+                getPlatforms(d.title || '', d.retailer || '').some(function(p) { return selectedPlatforms.has(p); });
+            var typeOk = selectedTypes.size === 0 ||
+                (selectedTypes.has('deals') && d.is_ad !== 0) ||
+                (selectedTypes.has('news') && d.is_ad === 0);
+            var retOk = selectedRetailers.size === 0 ||
+                selectedRetailers.has(normalizeRetailer(d.retailer));
+            return platformOk && typeOk && retOk;
+        }));
+    }
+
+    async function fetchDeals(param) {
+        grid.innerHTML = '<div class="cag-df-empty">Loading…</div>';
+        try {
+            var url = 'https://deals.cheapassgamer.com/api/deals?' + (param.hours ? 'hours=' + param.hours : 'days=' + param.days);
+            var res = await fetch(url);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            allDeals = await res.json();
+            renderRetailerPanel();
+            applyFilter();
+        } catch (e) {
+            grid.innerHTML = '<div class="cag-df-error">Failed to load deals.</div>';
+        }
+    }
+
+    // Dropdown panel toggle + outside-click close
+    var PANELS = ['cag-df-date-panel','cag-df-type-panel','cag-df-plat-panel','cag-df-store-panel'];
+    function closeAll() { PANELS.forEach(function(id) { var p = document.getElementById(id); if (p) p.classList.remove('open'); }); }
+    document.addEventListener('click', function(e) {
+        var inside = PANELS.some(function(id) { var p = document.getElementById(id); return p && p.contains(e.target); });
+        if (!inside) closeAll();
+    });
+    [['cag-df-date-btn','cag-df-date-panel'],
+     ['cag-df-type-btn','cag-df-type-panel'],
+     ['cag-df-plat-btn','cag-df-plat-panel'],
+     ['cag-df-store-btn','cag-df-store-panel']].forEach(function(pair) {
+        var btn = document.getElementById(pair[0]); var panel = document.getElementById(pair[1]);
+        if (!btn || !panel) return;
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var opening = !panel.classList.contains('open');
+            closeAll();
+            if (opening) panel.classList.add('open');
+        });
+    });
+
+    // Date pick — triggers a live API fetch
+    document.querySelectorAll('#cag-df-date-panel .cag-df-item').forEach(function(el) {
+        el.addEventListener('click', function(e) {
+            e.preventDefault();
+            var hours = el.dataset.hours, days = el.dataset.days;
+            dateBtn.textContent = (hours ? hours + 'h' : days + 'd') + ' ▾';
+            closeAll();
+            fetchDeals(hours ? { hours: hours } : { days: days });
+        });
+    });
+
+    // Type / Platform / Store change — client-side filter
+    document.addEventListener('change', function(e) {
+        var group = e.target.dataset && e.target.dataset.group;
+        if (!group) return;
+        var set = group === 'type' ? selectedTypes
+                : group === 'platform' ? selectedPlatforms
+                : group === 'retailer' ? selectedRetailers
+                : null;
+        if (!set) return;
+        if (e.target.checked) set.add(e.target.value); else set.delete(e.target.value);
+        applyFilter();
+    });
+
+    // Initial render from server-supplied JSON (no second fetch on page load)
+    renderRetailerPanel();
+    applyFilter();
+})();
+</script>
+</xf:if>

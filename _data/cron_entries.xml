@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<cron_entries>
+    <entry entry_id="cag_deal_feed_refresh" cron_class="CAG\DealFeed\Cron\DealFeed" cron_method="refreshCache" run_rules='{"day_type":"dom","dom":[-1],"dow":[-1],"hours":[-1],"minutes":[0,5,10,15,20,25,30,35,40,45,50,55]}' active="1" addon_id="CAG/DealFeed"/>
+</cron_entries>
