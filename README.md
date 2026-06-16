@@ -5,6 +5,18 @@ Embeds the curated, multi-platform, engagement-ranked deal feed from
 page (Date / Type / Platform / Store). Cron-driven server-side cache so page
 loads are never blocked by HTTP to the worker.
 
+Two surfaces for displaying the widget:
+
+1. **As an XF widget** — drop `<xf:widget class="CAG\DealFeed\Widget\DealFeed" />`
+   into any template (Page node template, the FrontPage add-on's `cag_home`
+   template, a widget position, etc.). Wraps in whatever chrome the host page
+   imposes.
+2. **At a standalone URL** — `/dealfeed-preview/` renders the widget via a
+   custom public controller. Strips the node breadcrumb, page-title heading,
+   share buttons, and block frame that a Page-node URL would impose. Keeps the
+   forum header + footer only. Useful for testing visual rules before promoting
+   to the actual homepage.
+
 - **Vendor / AddOn ID:** `CAG/DealFeed`
 - **Target XF version:** 2.2.0+
 - **PHP:** 8.1+
