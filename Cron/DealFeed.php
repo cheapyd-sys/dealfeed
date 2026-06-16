@@ -2,9 +2,12 @@
 
 namespace CAG\DealFeed\Cron;
 
+use CAG\DealFeed\Widget\DealFeed as Widget;
+
 /**
  * Cron-driven cache refresh for the deal feed.
- * Runs every 5 minutes. Caches the default 48h window.
+ * Runs every 5 minutes. Caches the default 48h window into XF's simpleCache
+ * (DB-backed) so it survives across requests regardless of XF's cache config.
  *
  * The widget reads this cache synchronously on every page render, so this
  * cron job is the ONLY place where the worker is contacted server-side —
@@ -26,12 +29,12 @@ class DealFeed
             return;
         }
 
-        $cache = $app->cache();
-        if ($cache) {
-            // 15-min hard TTL: even if the cron stops firing (server load,
-            // disabled, etc.) the page will start showing empty after 15 min
-            // rather than indefinitely stale data.
-            $cache->save('cag_deal_feed_48h', $deals, 900);
-        }
+        // 15-min hard TTL via stored timestamp: even if the cron stops firing
+        // (server load, disabled, etc.) the widget starts showing empty after
+        // 15 min rather than indefinitely-stale data.
+        $app->simpleCache()[Widget::ADDON_ID][Widget::CACHE_KEY] = [
+            'data'    => $deals,
+            'expires' => time() + Widget::CACHE_TTL,
+        ];
     }
 }
