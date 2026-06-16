@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <widget_definitions>
-    <definition definition_id="cag_deal_feed" definition_class="CAG\DealFeed\Widget\DealFeed" addon_id="CAG/DealFeed">
-        <title>CAG Deal Feed</title>
-        <description>Renders the curated multi-platform deal feed (cross-platform engagement-ranked) with live Date / Type / Platform / Store filters.</description>
-    </definition>
+    <definition definition_id="cag_deal_feed" definition_class="CAG\DealFeed\Widget\DealFeed" addon_id="CAG/DealFeed"/>
 </widget_definitions>
