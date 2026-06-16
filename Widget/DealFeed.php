@@ -45,9 +45,16 @@ class DealFeed extends AbstractWidget
             $deals = array_slice($deals, 0, $limit);
         }
 
+        $dealsArray = is_array($deals) ? $deals : [];
+
         return $this->renderer('widget_deal_feed', [
-            'title' => $this->options['title'] ?? 'Hottest Deals',
-            'deals' => is_array($deals) ? $deals : [],
+            'title'     => $this->options['title'] ?? 'Hottest Deals',
+            'deals'     => $dealsArray,
+            // Pre-encode JSON in PHP because XF 2.2 templates don't have a
+            // built-in json() function — `{{ json($var) }}` silently returns
+            // nothing. We pass the encoded string and the template outputs
+            // it raw inside the <script type="application/json"> block.
+            'dealsJson' => json_encode($dealsArray, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?: '[]',
         ]);
     }
 
