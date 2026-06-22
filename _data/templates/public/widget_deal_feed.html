@@ -59,6 +59,22 @@
 .cag-df-btn:hover { color:#e4e2e1; border-color:#899484; }
 .cag-df-btn.active { border-color:#28dc6e; color:#28dc6e; }
 .cag-df-btn-narrow { padding:6px 9px; }
+.cag-df-badge {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:16px;
+    height:16px;
+    padding:0 5px;
+    margin:0 2px 0 6px;
+    border-radius:8px;
+    background:#28dc6e;
+    color:#131313;
+    font-size:10px;
+    font-weight:900;
+    line-height:1;
+    vertical-align:middle;
+}
 .cag-df-dropdown { position:relative; }
 .cag-df-panel { display:none; position:absolute; top:calc(100% + 6px); left:0; z-index:200; background:#1f2020; border:1px solid #3f4a3c; border-radius:10px; min-width:170px; box-shadow:0 8px 28px rgba(0,0,0,0.6); max-height:65vh; overflow-y:auto; }
 .cag-df-panel.open { display:block; }
@@ -160,6 +176,7 @@
 }
 .cag-df-light .cag-df-btn:hover { color:#1a1a1a; border-color:#888; }
 .cag-df-light .cag-df-btn.active { border-color:#0c8c43; color:#0c8c43; }
+.cag-df-light .cag-df-badge { background:#0c8c43; color:#fff; }
 .cag-df-light .cag-df-panel {
     background:#fff; border-color:#d8d8d8;
     box-shadow:0 4px 16px rgba(0,0,0,0.12);
@@ -261,6 +278,53 @@
     var autoLoads = 0;
     var filteredDeals = [];
     var scrollObserver = null;
+
+    // Filter persistence — remembers a visitor's selected filters across visits
+    // via localStorage. Stored as JSON under FILTERS_KEY.
+    var FILTERS_KEY = 'cag-df-filters';
+    var lastDateParam = { hours: 48 };
+
+    function saveFilters() {
+        try {
+            localStorage.setItem(FILTERS_KEY, JSON.stringify({
+                v: 1,
+                hours: lastDateParam.hours || null,
+                days: lastDateParam.days || null,
+                types: Array.from(selectedTypes),
+                platforms: Array.from(selectedPlatforms),
+                retailers: Array.from(selectedRetailers)
+            }));
+        } catch (e) {}
+    }
+
+    function loadFilters() {
+        try {
+            var raw = localStorage.getItem(FILTERS_KEY);
+            if (!raw) return null;
+            var s = JSON.parse(raw);
+            if (s.v !== 1) return null;
+            return s;
+        } catch (e) { return null; }
+    }
+
+    // Update the dropdown button labels with a small count badge and toggle
+    // the .active class so the green-accent border kicks in when any filter
+    // is selected in that group. Badge stays small to fit narrow mobile.
+    function updateButtonBadges() {
+        function setBadge(id, label, count) {
+            var btn = document.getElementById(id);
+            if (!btn) return;
+            var badge = count > 0
+                ? '<span class="cag-df-badge">' + count + '</span>'
+                : '';
+            btn.innerHTML = label + badge + ' &#9662;';
+            if (count > 0) btn.classList.add('active');
+            else btn.classList.remove('active');
+        }
+        setBadge('cag-df-type-btn', 'Type', selectedTypes.size);
+        setBadge('cag-df-plat-btn', 'Platform', selectedPlatforms.size);
+        setBadge('cag-df-store-btn', 'Store', selectedRetailers.size);
+    }
 
     function esc(s) {
         var d = document.createElement('div');
@@ -527,6 +591,8 @@
         displayLimit = INITIAL_COUNT;
         autoLoads = 0;
         renderGrid();
+        updateButtonBadges();
+        saveFilters();
     }
 
     async function fetchDeals(param) {
@@ -590,7 +656,8 @@
             var hours = el.dataset.hours, days = el.dataset.days;
             dateBtn.textContent = (hours ? hours + 'h' : days + 'd') + ' ▾';
             closeAll();
-            fetchDeals(hours ? { hours: hours } : { days: days });
+            lastDateParam = hours ? { hours: Number(hours) } : { days: Number(days) };
+            fetchDeals(lastDateParam);
         });
     });
 
@@ -607,9 +674,44 @@
         applyFilter();
     });
 
-    // Initial paint from server-supplied JSON
-    renderRetailerPanel();
-    applyFilter();
+    // Initial paint — restore any persisted filters first, then either fetch
+    // fresh data (if the saved date window differs from the default 48h that
+    // the server-rendered JSON already covers) or paint from the cached JSON.
+    (function initWithSavedFilters() {
+        var saved = loadFilters();
+        if (saved) {
+            saved.types.forEach(function(v) { selectedTypes.add(v); });
+            saved.platforms.forEach(function(v) { selectedPlatforms.add(v); });
+            saved.retailers.forEach(function(v) { selectedRetailers.add(v); });
+            // Check the hardcoded Type + Platform checkboxes in the DOM.
+            // Retailer checkboxes get checked via renderRetailerPanel().
+            var staticBoxes = document.querySelectorAll('input[type="checkbox"][data-group]');
+            for (var i = 0; i < staticBoxes.length; i++) {
+                var cb = staticBoxes[i];
+                var g = cb.dataset.group;
+                var v = cb.value;
+                if (g === 'type' && selectedTypes.has(v)) cb.checked = true;
+                if (g === 'platform' && selectedPlatforms.has(v)) cb.checked = true;
+            }
+            var hours = Number(saved.hours);
+            var days = Number(saved.days);
+            if (hours && hours !== 48) {
+                lastDateParam = { hours: hours };
+                dateBtn.textContent = hours + 'h ▾';
+                fetchDeals(lastDateParam);
+                return;
+            }
+            if (days) {
+                lastDateParam = { days: days };
+                dateBtn.textContent = days + 'd ▾';
+                fetchDeals(lastDateParam);
+                return;
+            }
+        }
+        // Default path — server-rendered JSON already has the 48h window.
+        renderRetailerPanel();
+        applyFilter();
+    })();
 })();
 </script>
 </xf:if>
