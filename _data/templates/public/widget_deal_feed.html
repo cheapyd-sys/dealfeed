@@ -344,8 +344,12 @@
         var p = [];
         if (/\bPC(?:DD)?\b|\bPCDD\b|\bSteam\b/i.test(t)) p.push('pc');
         if (/\bPS[45]\b|\bPlayStation\b|\bPSN\b/i.test(t)) p.push('playstation');
-        if (/\bSwitch\b|\beShop\b|\bNintendo\b/i.test(t)) p.push('nintendo');
-        if (/\bXbox\b|\bGame Pass\b/i.test(t)) p.push('xbox');
+        // Nintendo also detects abbreviations in titles like "(S)", "(S2)", "(S/S2)".
+        // Char classes [(] [)] [/] avoid the backslash escapes the v2 page uses —
+        // XF's admin editor strips them when long lines wrap.
+        if (/\bSwitch\b|\beShop\b|\bNintendo\b|[(]S2?(?:[/]S2)?[)]/i.test(t)) p.push('nintendo');
+        // Xbox also detects "(XB...", "(X)", "(X1)", "(XS)", "/X)", "/X1)", "/XS)".
+        if (/\bXbox\b|\bGame Pass\b|[(]XB|[/(]X(?:1|S)?[)]/i.test(t)) p.push('xbox');
         // Merch detection split into short lines — XF's template editor hard-wraps
         // long lines, which produces literal newlines inside regex literals (parse error).
         if (/\bshirt\b|\bfigure\b|\bplush\b|\bfunko\b/i.test(t)) p.push('merch');
