@@ -574,7 +574,12 @@
     }
 
     function platformMatch(d) {
-        var plats = getPlatforms(d.title || '', d.retailer || '');
+        // Prefer the server-computed platforms array (matches against raw_text
+        // too, so titles that don't mention the platform still tag right).
+        // Fall back to client-side getPlatforms() if the server didn't send it.
+        var plats = (d.platforms && d.platforms.length)
+            ? d.platforms
+            : getPlatforms(d.title || '', d.retailer || '');
         for (var i = 0; i < plats.length; i++) {
             if (selectedPlatforms.has(plats[i])) return true;
         }
