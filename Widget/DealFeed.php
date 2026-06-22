@@ -30,7 +30,7 @@ class DealFeed extends AbstractWidget
     public const POOL_SIZE = 60;
 
     protected $defaultOptions = [
-        'title' => 'Hottest Deals',
+        'title' => 'CAG Deal Feed',
         'limit' => self::POOL_SIZE,
     ];
 
