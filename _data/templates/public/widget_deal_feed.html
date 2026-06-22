@@ -150,7 +150,11 @@
     var selectedPlatforms = new Set();
     var selectedRetailers = new Set();
 
-    function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+    function esc(s) {
+        var d = document.createElement('div');
+        d.textContent = s == null ? '' : String(s);
+        return d.innerHTML;
+    }
 
     function fmtDate(s) {
         if (!s) return '';
@@ -196,37 +200,59 @@
     }
 
     // ── Card renderers — match v2's hero / secondary / small / grid pattern ──
+    // All string-builder lines kept short — XF's template editor hard-wraps long
+    // lines, which produces literal newlines inside JS string literals (parse error).
     function commonCardOpen(d, sizeClass) {
         var url = esc(d.deal_link || '#');
         var img = esc(d.image_url || '');
         var title = esc(d.title || '');
         var date = esc(fmtDate(d.post_date));
-        var h = '<a class="cag-df-card ' + sizeClass + '" href="' + url + '" target="_blank" rel="noopener">';
-        if (img) h += '<img class="cag-df-bg" src="' + img + '" alt="' + title + '" loading="lazy"/>';
-        else h += '<div class="cag-df-noimg">&#9633;</div>';
+        var h = '<a class="cag-df-card ' + sizeClass + '"';
+        h += ' href="' + url + '"';
+        h += ' target="_blank" rel="noopener">';
+        if (img) {
+            h += '<img class="cag-df-bg"';
+            h += ' src="' + img + '"';
+            h += ' alt="' + title + '"';
+            h += ' loading="lazy"/>';
+        } else {
+            h += '<div class="cag-df-noimg">&#9633;</div>';
+        }
         h += '<div class="cag-df-grad cag-df-grad-strong"></div>';
         if (date) h += '<div class="cag-df-date">' + date + '</div>';
         return h;
     }
 
     function heroCard(d) {
-        var title = esc(d.title || ''), price = esc(d.price || ''), retailer = esc(d.retailer || '');
+        var title = esc(d.title || '');
+        var price = esc(d.price || '');
+        var retailer = esc(d.retailer || '');
         var isNews = !d.is_ad;
         var h = commonCardOpen(d, 'size-hero');
         h += '<div class="cag-df-content">';
-        if (retailer) h += '<div class="cag-df-ptags"><span class="cag-df-ptag">' + retailer + '</span></div>';
+        if (retailer) {
+            h += '<div class="cag-df-ptags">';
+            h += '<span class="cag-df-ptag">' + retailer + '</span>';
+            h += '</div>';
+        }
         if (isNews) {
             h += '<h2 style="font-size:20px;">' + title + '</h2>';
         } else {
             h += '<h2>' + title + '</h2>';
-            if (price) h += '<div style="margin-top:14px;"><span class="cag-df-price">' + price + '</span></div>';
+            if (price) {
+                h += '<div style="margin-top:14px;">';
+                h += '<span class="cag-df-price">' + price + '</span>';
+                h += '</div>';
+            }
         }
         h += '</div></a>';
         return h;
     }
 
     function secondaryCard(d) {
-        var title = esc(d.title || ''), price = esc(d.price || ''), retailer = esc(d.retailer || '');
+        var title = esc(d.title || '');
+        var price = esc(d.price || '');
+        var retailer = esc(d.retailer || '');
         var isNews = !d.is_ad;
         var h = commonCardOpen(d, 'size-secondary');
         h += '<div class="cag-df-content">';
@@ -242,7 +268,9 @@
     }
 
     function smallCard(d) {
-        var title = esc(d.title || ''), price = esc(d.price || ''), retailer = esc(d.retailer || '');
+        var title = esc(d.title || '');
+        var price = esc(d.price || '');
+        var retailer = esc(d.retailer || '');
         var isNews = !d.is_ad;
         var h = commonCardOpen(d, 'size-small');
         h += '<div class="cag-df-content">';
@@ -258,7 +286,9 @@
     }
 
     function gridCard(d) {
-        var title = esc(d.title || ''), price = esc(d.price || ''), retailer = esc(d.retailer || '');
+        var title = esc(d.title || '');
+        var price = esc(d.price || '');
+        var retailer = esc(d.retailer || '');
         var isNews = !d.is_ad;
         var h = commonCardOpen(d, 'size-grid');
         h += '<div class="cag-df-content">';
@@ -294,24 +324,42 @@
             var r = normalizeRetailer(d.retailer);
             if (r) counts[r] = (counts[r] || 0) + 1;
         });
-        return Object.keys(counts).sort(function(a, b) { return counts[b] - counts[a]; }).slice(0, 25);
+        var keys = Object.keys(counts);
+        keys.sort(function(a, b) { return counts[b] - counts[a]; });
+        return keys.slice(0, 25);
     }
 
     function renderRetailerPanel() {
-        var sorted = getTopRetailers().sort(function(a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+        var sorted = getTopRetailers();
+        sorted.sort(function(a, b) {
+            return a.toLowerCase().localeCompare(b.toLowerCase());
+        });
         var html = '';
         sorted.forEach(function(r) {
             var checked = selectedRetailers.has(r) ? ' checked' : '';
-            html += '<label class="cag-df-item"><input type="checkbox" value="' + esc(r) + '" data-group="retailer"' + checked + '> ' + esc(r) + '</label>';
+            html += '<label class="cag-df-item">';
+            html += '<input type="checkbox"';
+            html += ' value="' + esc(r) + '"';
+            html += ' data-group="retailer"' + checked + '> ';
+            html += esc(r);
+            html += '</label>';
         });
-        document.getElementById('cag-df-store-panel').innerHTML = html;
+        var panel = document.getElementById('cag-df-store-panel');
+        if (panel) panel.innerHTML = html;
+    }
+
+    function platformMatch(d) {
+        var plats = getPlatforms(d.title || '', d.retailer || '');
+        for (var i = 0; i < plats.length; i++) {
+            if (selectedPlatforms.has(plats[i])) return true;
+        }
+        return false;
     }
 
     function applyFilter() {
         renderGrid(allDeals.filter(function(d) {
             if (!d.image_url) return false;
-            var platformOk = selectedPlatforms.size === 0 ||
-                getPlatforms(d.title || '', d.retailer || '').some(function(p) { return selectedPlatforms.has(p); });
+            var platformOk = selectedPlatforms.size === 0 || platformMatch(d);
             var typeOk = selectedTypes.size === 0 ||
                 (selectedTypes.has('deals') && d.is_ad !== 0) ||
                 (selectedTypes.has('news') && d.is_ad === 0);
@@ -324,7 +372,8 @@
     async function fetchDeals(param) {
         grid.innerHTML = '<div class="cag-df-empty">Loading&hellip;</div>';
         try {
-            var url = 'https://deals.cheapassgamer.com/api/deals?' + (param.hours ? 'hours=' + param.hours : 'days=' + param.days);
+            var qs = param.hours ? 'hours=' + param.hours : 'days=' + param.days;
+            var url = 'https://deals.cheapassgamer.com/api/deals?' + qs;
             var res = await fetch(url);
             if (!res.ok) throw new Error('HTTP ' + res.status);
             allDeals = await res.json();
@@ -336,17 +385,35 @@
     }
 
     // Dropdown toggle + outside-click close
-    var PANELS = ['cag-df-date-panel','cag-df-type-panel','cag-df-plat-panel','cag-df-store-panel'];
-    function closeAll() { PANELS.forEach(function(id) { var p = document.getElementById(id); if (p) p.classList.remove('open'); }); }
+    var PANELS = [
+        'cag-df-date-panel',
+        'cag-df-type-panel',
+        'cag-df-plat-panel',
+        'cag-df-store-panel'
+    ];
+    function closeAll() {
+        PANELS.forEach(function(id) {
+            var p = document.getElementById(id);
+            if (p) p.classList.remove('open');
+        });
+    }
     document.addEventListener('click', function(e) {
-        var inside = PANELS.some(function(id) { var p = document.getElementById(id); return p && p.contains(e.target); });
+        var inside = false;
+        for (var i = 0; i < PANELS.length; i++) {
+            var p = document.getElementById(PANELS[i]);
+            if (p && p.contains(e.target)) { inside = true; break; }
+        }
         if (!inside) closeAll();
     });
-    [['cag-df-date-btn','cag-df-date-panel'],
-     ['cag-df-type-btn','cag-df-type-panel'],
-     ['cag-df-plat-btn','cag-df-plat-panel'],
-     ['cag-df-store-btn','cag-df-store-panel']].forEach(function(pair) {
-        var btn = document.getElementById(pair[0]); var panel = document.getElementById(pair[1]);
+    var DROPDOWN_PAIRS = [
+        ['cag-df-date-btn', 'cag-df-date-panel'],
+        ['cag-df-type-btn', 'cag-df-type-panel'],
+        ['cag-df-plat-btn', 'cag-df-plat-panel'],
+        ['cag-df-store-btn', 'cag-df-store-panel']
+    ];
+    DROPDOWN_PAIRS.forEach(function(pair) {
+        var btn = document.getElementById(pair[0]);
+        var panel = document.getElementById(pair[1]);
         if (!btn || !panel) return;
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
