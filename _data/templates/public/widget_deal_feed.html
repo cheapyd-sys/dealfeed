@@ -87,6 +87,24 @@
 .cag-df-empty, .cag-df-error { grid-column:1 / -1; padding:50px 20px; text-align:center; font-family:'Space Grotesk',sans-serif; font-weight:700; }
 .cag-df-empty { color:#becab9; }
 .cag-df-error { color:#ef4444; }
+
+/* ── Load more / pagination ──────────────────────────────────────── */
+#cag-df-loadmore { padding:18px 0; text-align:center; }
+#cag-df-sentinel { height:40px; width:100%; }
+.cag-df-loadmore-btn {
+    padding:12px 28px;
+    font-size:13px;
+    font-weight:700;
+    border-color:#28dc6e;
+    color:#28dc6e;
+    background:#1f2020;
+    cursor:pointer;
+    transition:all 0.15s;
+}
+.cag-df-loadmore-btn:hover {
+    background:#28dc6e;
+    color:#131313;
+}
 </style>
 
 <div class="cag-df-wrap" id="cag-df-root">
@@ -149,6 +167,16 @@
     var selectedTypes = new Set();
     var selectedPlatforms = new Set();
     var selectedRetailers = new Set();
+
+    // Pagination state — initial render shows INITIAL_COUNT, then auto-loads up to
+    // AUTO_LOAD_MAX more chunks, then a Load More button takes over.
+    var INITIAL_COUNT = 12;
+    var LOAD_INCREMENT = 12;
+    var AUTO_LOAD_MAX = 3;
+    var displayLimit = INITIAL_COUNT;
+    var autoLoads = 0;
+    var filteredDeals = [];
+    var scrollObserver = null;
 
     function esc(s) {
         var d = document.createElement('div');
@@ -303,11 +331,13 @@
         return h;
     }
 
-    function renderGrid(deals) {
-        if (!deals.length) {
+    function renderGrid() {
+        if (!filteredDeals.length) {
             grid.innerHTML = '<div class="cag-df-empty">No deals match these filters.</div>';
+            updateLoadMore();
             return;
         }
+        var deals = filteredDeals.slice(0, displayLimit);
         var html = '';
         for (var i = 0; i < deals.length; i++) {
             if (i === 0) html += heroCard(deals[i]);
@@ -316,6 +346,49 @@
             else html += gridCard(deals[i]);
         }
         grid.innerHTML = html;
+        updateLoadMore();
+    }
+
+    function updateLoadMore() {
+        if (scrollObserver) {
+            scrollObserver.disconnect();
+            scrollObserver = null;
+        }
+        var lm = document.getElementById('cag-df-loadmore');
+        if (!lm) {
+            lm = document.createElement('div');
+            lm.id = 'cag-df-loadmore';
+            grid.parentNode.insertBefore(lm, grid.nextSibling);
+        }
+        if (displayLimit >= filteredDeals.length) {
+            lm.innerHTML = '';
+            return;
+        }
+        if (autoLoads < AUTO_LOAD_MAX) {
+            lm.innerHTML = '<div id="cag-df-sentinel"></div>';
+            var sentinel = document.getElementById('cag-df-sentinel');
+            scrollObserver = new IntersectionObserver(function(entries) {
+                if (entries[0] && entries[0].isIntersecting) {
+                    autoLoads++;
+                    displayLimit += LOAD_INCREMENT;
+                    renderGrid();
+                }
+            }, { rootMargin: '200px' });
+            scrollObserver.observe(sentinel);
+        } else {
+            var remaining = filteredDeals.length - displayLimit;
+            var btnHtml = '<button';
+            btnHtml += ' id="cag-df-loadmore-btn"';
+            btnHtml += ' class="cag-df-btn cag-df-loadmore-btn">';
+            btnHtml += 'Load More (' + remaining + ' remaining)';
+            btnHtml += '</button>';
+            lm.innerHTML = btnHtml;
+            var btn = document.getElementById('cag-df-loadmore-btn');
+            btn.addEventListener('click', function() {
+                displayLimit += LOAD_INCREMENT;
+                renderGrid();
+            });
+        }
     }
 
     function getTopRetailers() {
@@ -357,7 +430,7 @@
     }
 
     function applyFilter() {
-        renderGrid(allDeals.filter(function(d) {
+        filteredDeals = allDeals.filter(function(d) {
             if (!d.image_url) return false;
             var platformOk = selectedPlatforms.size === 0 || platformMatch(d);
             var typeOk = selectedTypes.size === 0 ||
@@ -366,7 +439,10 @@
             var retOk = selectedRetailers.size === 0 ||
                 selectedRetailers.has(normalizeRetailer(d.retailer));
             return platformOk && typeOk && retOk;
-        }));
+        });
+        displayLimit = INITIAL_COUNT;
+        autoLoads = 0;
+        renderGrid();
     }
 
     async function fetchDeals(param) {
