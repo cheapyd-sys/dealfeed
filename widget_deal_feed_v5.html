@@ -9,6 +9,51 @@
 /* ── Header (title + filter pills) ───────────────────────────────── */
 .cag-df-header { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:18px; }
 .cag-df-title { margin:0; font-size:18px; font-weight:900; font-family:'Space Grotesk',sans-serif; color:#28dc6e; letter-spacing:-0.3px; text-shadow:0 0 20px rgba(40,220,110,0.5); }
+.cag-df-titleline { display:flex; align-items:center; gap:8px; position:relative; }
+.cag-df-info {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:18px; height:18px;
+    border-radius:50%;
+    border:1px solid #3f4a3c;
+    background:#1f2020;
+    color:#899484;
+    font-family:'Space Grotesk',sans-serif;
+    font-size:11px;
+    font-weight:900;
+    font-style:italic;
+    cursor:help;
+    user-select:none;
+    transition:all 0.15s;
+}
+.cag-df-info:hover, .cag-df-info:focus {
+    color:#28dc6e;
+    border-color:#28dc6e;
+    outline:none;
+}
+.cag-df-info-tip {
+    position:absolute;
+    top:calc(100% + 8px);
+    left:0;
+    width:260px;
+    padding:10px 12px;
+    background:#1f2020;
+    border:1px solid #3f4a3c;
+    border-radius:8px;
+    box-shadow:0 8px 28px rgba(0,0,0,0.6);
+    font-family:'Inter',sans-serif;
+    font-size:12px;
+    font-weight:400;
+    color:#becab9;
+    line-height:1.45;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 0.15s;
+    z-index:300;
+}
+.cag-df-info:hover ~ .cag-df-info-tip,
+.cag-df-info:focus ~ .cag-df-info-tip { opacity:1; }
 .cag-df-filters { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
 .cag-df-btn { padding:6px 14px; border-radius:9999px; font-size:12px; font-family:'Space Grotesk',sans-serif; font-weight:700; border:1px solid #3f4a3c; background:#1f2020; color:#becab9; cursor:pointer; transition:all 0.15s; white-space:nowrap; }
 .cag-df-btn:hover { color:#e4e2e1; border-color:#899484; }
@@ -109,7 +154,14 @@
 
 <div class="cag-df-wrap" id="cag-df-root">
     <div class="cag-df-header">
-        <h3 class="cag-df-title">{$title}</h3>
+        <div class="cag-df-titleline">
+            <h3 class="cag-df-title">{$title}</h3>
+            <span class="cag-df-info" tabindex="0" role="button"
+                  aria-label="About this feed">i</span>
+            <div class="cag-df-info-tip" role="tooltip">
+                Deals from CAG's social posts, ranked by community engagement.
+            </div>
+        </div>
         <div class="cag-df-filters">
             <div class="cag-df-dropdown">
                 <button type="button" class="cag-df-btn cag-df-btn-narrow active" id="cag-df-date-btn">48h &#9662;</button>
