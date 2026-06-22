@@ -18,7 +18,9 @@ use XF\Widget\AbstractWidget;
 class DealFeed extends AbstractWidget
 {
     public const ADDON_ID = 'CAG/DealFeed';
-    public const CACHE_KEY = 'cag_deal_feed_48h';
+    // Cache key versioned by pool-size so bumping POOL_SIZE invalidates stale
+    // smaller-pool cache entries without waiting for TTL expiry.
+    public const CACHE_KEY = 'cag_deal_feed_48h_p60';
     public const CACHE_TTL = 900; // 15 minutes — matches cron cadence (5 min) ×3.
 
     // How many deals to ship in the initial server-rendered JSON. The JS widget
