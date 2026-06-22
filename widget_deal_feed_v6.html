@@ -150,9 +150,41 @@
     background:#28dc6e;
     color:#131313;
 }
+
+/* ── Light theme — auto-applied when XF style is "Light style" (style_id 2). ── */
+/* Cards keep their dark image gradient + white text (looks good on either bg). */
+.cag-df-light { background:#fff; color:#1a1a1a; }
+.cag-df-light .cag-df-title { color:#0c8c43; text-shadow:none; }
+.cag-df-light .cag-df-btn {
+    background:#f5f5f5; color:#444; border-color:#d8d8d8;
+}
+.cag-df-light .cag-df-btn:hover { color:#1a1a1a; border-color:#888; }
+.cag-df-light .cag-df-btn.active { border-color:#0c8c43; color:#0c8c43; }
+.cag-df-light .cag-df-panel {
+    background:#fff; border-color:#d8d8d8;
+    box-shadow:0 4px 16px rgba(0,0,0,0.12);
+}
+.cag-df-light .cag-df-item { color:#444; }
+.cag-df-light .cag-df-item:hover { background:#f0f0f0; color:#1a1a1a; }
+.cag-df-light .cag-df-card { background:#f4f4f4; box-shadow:0 2px 12px rgba(0,0,0,0.1); }
+.cag-df-light .cag-df-info {
+    background:#f5f5f5; color:#666; border-color:#d8d8d8;
+}
+.cag-df-light .cag-df-info:hover,
+.cag-df-light .cag-df-info:focus { color:#0c8c43; border-color:#0c8c43; }
+.cag-df-light .cag-df-info-tip {
+    background:#fff; color:#444; border-color:#d8d8d8;
+    box-shadow:0 4px 16px rgba(0,0,0,0.15);
+}
+.cag-df-light .cag-df-loadmore-btn {
+    background:#fff; color:#0c8c43; border-color:#0c8c43;
+}
+.cag-df-light .cag-df-loadmore-btn:hover { background:#0c8c43; color:#fff; }
+.cag-df-light .cag-df-empty { color:#666; }
 </style>
 
-<div class="cag-df-wrap" id="cag-df-root">
+<xf:set var="$cagDfThemeClass" value="{{ $xf.style.style_id == 2 ? 'cag-df-light' : '' }}" />
+<div class="cag-df-wrap {$cagDfThemeClass}" id="cag-df-root">
     <div class="cag-df-header">
         <div class="cag-df-titleline">
             <h3 class="cag-df-title">{$title}</h3>
