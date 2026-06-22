@@ -93,8 +93,20 @@
 .cag-df-grid { display:grid; grid-template-columns:repeat(12,1fr); grid-auto-rows:min-content; gap:14px; }
 .cag-df-card { position:relative; overflow:hidden; border-radius:16px; display:block; cursor:pointer; transition:transform 0.2s; background:#1b1c1c; box-shadow:0 8px 28px rgba(0,0,0,0.35); }
 .cag-df-card:hover { transform:translateY(-2px); }
-.cag-df-card img.cag-df-bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:top; transition:transform 0.6s; }
-.cag-df-card:hover img.cag-df-bg { transform:scale(1.05); }
+/* Zoom in 1.22x past the source photo's natural framing so the product
+   fills more of the card. Source images often have lots of padding around
+   the actual product; cropping ~10% off each edge usually loses nothing
+   important and the product looks materially larger. Center-anchored so
+   any cropping is symmetric.
+   object-position: center 40% biases slightly toward the top — product
+   shots tend to put the item just above center, especially on apparel. */
+.cag-df-card img.cag-df-bg {
+    position:absolute; inset:0; width:100%; height:100%;
+    object-fit:cover; object-position:center 40%;
+    transform:scale(1.22); transform-origin:center 50%;
+    transition:transform 0.6s;
+}
+.cag-df-card:hover img.cag-df-bg { transform:scale(1.28); }
 .cag-df-card .cag-df-noimg { position:absolute; inset:0; background:#2a2a2a; display:flex; align-items:center; justify-content:center; color:#3f4a3c; font-size:48px; font-family:'Space Grotesk',sans-serif; }
 .cag-df-card .cag-df-grad { position:absolute; inset:0; background:linear-gradient(to top, rgba(19,19,19,1) 0%, rgba(19,19,19,0.4) 45%, transparent 75%); }
 .cag-df-card .cag-df-grad-strong { background:linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 50%, transparent 80%); }
