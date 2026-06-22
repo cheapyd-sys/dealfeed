@@ -164,9 +164,13 @@
         var p = [];
         if (/\bPC(?:DD)?\b|\bPCDD\b|\bSteam\b/i.test(t)) p.push('pc');
         if (/\bPS[45]\b|\bPlayStation\b|\bPSN\b/i.test(t)) p.push('playstation');
-        if (/\bSwitch\b|\beShop\b|\bNintendo\b|\(S2?(?:\/S2)?\)/i.test(t)) p.push('nintendo');
-        if (/\bXbox\b|\bGame Pass\b|\(XB|[\/\(]X(?:1|S)?\)/i.test(t)) p.push('xbox');
-        if (/\bshirt\b|\bfigure\b|\bplush\b|\bfunko\b|\blego\b|\bstatue\b|\bpin\b|\btoy\b|\bmerch\b|box.?lunch|big bad toy/i.test(t)) p.push('merch');
+        if (/\bSwitch\b|\beShop\b|\bNintendo\b/i.test(t)) p.push('nintendo');
+        if (/\bXbox\b|\bGame Pass\b/i.test(t)) p.push('xbox');
+        // Merch detection split into short lines — XF's template editor hard-wraps
+        // long lines, which produces literal newlines inside regex literals (parse error).
+        if (/\bshirt\b|\bfigure\b|\bplush\b|\bfunko\b/i.test(t)) p.push('merch');
+        else if (/\blego\b|\bstatue\b|\bpin\b|\btoy\b/i.test(t)) p.push('merch');
+        else if (/\bmerch\b|box.?lunch|big bad toy/i.test(t)) p.push('merch');
         return p;
     }
 
