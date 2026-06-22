@@ -1,0 +1,455 @@
+<xf:if is="$deals">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+/* ── Container ───────────────────────────────────────────────────── */
+.cag-df-wrap { background:#131313; color:#e4e2e1; padding:18px; border-radius:12px; font-family:'Inter',-apple-system,BlinkMacSystemFont,Arial,sans-serif; box-sizing:border-box; -webkit-font-smoothing:antialiased; }
+.cag-df-wrap * { box-sizing:border-box; }
+.cag-df-wrap a { text-decoration:none; color:inherit; }
+
+/* ── Header (title + filter pills) ───────────────────────────────── */
+.cag-df-header { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:18px; }
+.cag-df-title { margin:0; font-size:18px; font-weight:900; font-family:'Space Grotesk',sans-serif; color:#28dc6e; letter-spacing:-0.3px; text-shadow:0 0 20px rgba(40,220,110,0.5); }
+.cag-df-filters { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+.cag-df-btn { padding:6px 14px; border-radius:9999px; font-size:12px; font-family:'Space Grotesk',sans-serif; font-weight:700; border:1px solid #3f4a3c; background:#1f2020; color:#becab9; cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+.cag-df-btn:hover { color:#e4e2e1; border-color:#899484; }
+.cag-df-btn.active { border-color:#28dc6e; color:#28dc6e; }
+.cag-df-btn-narrow { padding:6px 9px; }
+.cag-df-dropdown { position:relative; }
+.cag-df-panel { display:none; position:absolute; top:calc(100% + 6px); left:0; z-index:200; background:#1f2020; border:1px solid #3f4a3c; border-radius:10px; min-width:170px; box-shadow:0 8px 28px rgba(0,0,0,0.6); max-height:65vh; overflow-y:auto; }
+.cag-df-panel.open { display:block; }
+.cag-df-panel.align-right { left:auto; right:0; }
+.cag-df-item { display:flex; align-items:center; gap:9px; padding:8px 14px; cursor:pointer; font-size:13px; color:#becab9; user-select:none; }
+.cag-df-item:hover { background:#2a2a2a; color:#e4e2e1; }
+.cag-df-item input[type=checkbox] { accent-color:#28dc6e; width:14px; height:14px; flex-shrink:0; }
+
+/* ── Grid: 12-col responsive (mobile 1-col, md 8-col, lg 12-col) ──
+   Card spans mirror v2's renderGrid logic:
+   • hero      : col-span-12 / md-8 / lg-8, row-span-2, min-h-480
+   • secondary : col-span-12 / md-4 / lg-4, min-h-200
+   • small     : col-span-12 / md-4 / lg-4, min-h-160
+   • grid      : col-span-12 / md-4 / lg-3, aspect 4/3
+*/
+.cag-df-grid { display:grid; grid-template-columns:repeat(12,1fr); grid-auto-rows:min-content; gap:14px; }
+.cag-df-card { position:relative; overflow:hidden; border-radius:16px; display:block; cursor:pointer; transition:transform 0.2s; background:#1b1c1c; box-shadow:0 8px 28px rgba(0,0,0,0.35); }
+.cag-df-card:hover { transform:translateY(-2px); }
+.cag-df-card img.cag-df-bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:top; transition:transform 0.6s; }
+.cag-df-card:hover img.cag-df-bg { transform:scale(1.05); }
+.cag-df-card .cag-df-noimg { position:absolute; inset:0; background:#2a2a2a; display:flex; align-items:center; justify-content:center; color:#3f4a3c; font-size:48px; font-family:'Space Grotesk',sans-serif; }
+.cag-df-card .cag-df-grad { position:absolute; inset:0; background:linear-gradient(to top, rgba(19,19,19,1) 0%, rgba(19,19,19,0.4) 45%, transparent 75%); }
+.cag-df-card .cag-df-grad-strong { background:linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 50%, transparent 80%); }
+.cag-df-card .cag-df-content { position:absolute; left:0; right:0; bottom:0; padding:24px; z-index:2; }
+.cag-df-card .cag-df-date { position:absolute; top:14px; right:14px; z-index:3; padding:5px 10px; border-radius:6px; background:rgba(0,0,0,0.45); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:700; color:rgba(228,226,225,0.7); }
+.cag-df-card h2, .cag-df-card h3, .cag-df-card h4 { font-family:'Space Grotesk',sans-serif; font-weight:900; color:#fff; margin:0; line-height:1.15; letter-spacing:-0.02em; text-shadow:0 1px 3px rgba(0,0,0,1), 0 0 20px rgba(0,0,0,1), 0 0 40px rgba(0,0,0,0.8); }
+.cag-df-card .cag-df-price { font-family:'Space Grotesk',sans-serif; font-weight:900; color:#28dc6e; line-height:1; }
+.cag-df-card .cag-df-retailer { font-size:11px; color:rgba(255,255,255,0.6); font-weight:500; }
+.cag-df-card .cag-df-priceline { display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
+.cag-df-card .cag-df-ptags { margin-bottom:8px; display:flex; gap:5px; flex-wrap:wrap; }
+
+/* Card sizes — mobile-first: every card spans full row */
+.cag-df-card.size-hero,
+.cag-df-card.size-secondary,
+.cag-df-card.size-small,
+.cag-df-card.size-grid { grid-column:span 12; }
+.cag-df-card.size-hero      { min-height:340px; }
+.cag-df-card.size-secondary { min-height:200px; }
+.cag-df-card.size-small     { min-height:160px; }
+.cag-df-card.size-grid      { aspect-ratio:4/3; }
+.cag-df-card.size-hero h2 { font-size:24px; }
+.cag-df-card.size-hero .cag-df-price { font-size:32px; text-shadow:0 0 20px rgba(40,220,110,0.5); }
+.cag-df-card.size-secondary h3 { font-size:17px; }
+.cag-df-card.size-secondary .cag-df-price { font-size:22px; }
+.cag-df-card.size-small h4 { font-size:14px; }
+.cag-df-card.size-small .cag-df-price { font-size:17px; }
+.cag-df-card.size-grid h4 { font-size:13px; }
+.cag-df-card.size-grid .cag-df-price { font-size:15px; }
+.cag-df-card.size-grid .cag-df-content { padding:12px; }
+.cag-df-card.size-small .cag-df-content { padding:16px; }
+
+@media (min-width:700px) {
+  .cag-df-card.size-hero      { grid-column:span 8; min-height:420px; }
+  .cag-df-card.size-secondary { grid-column:span 4; }
+  .cag-df-card.size-small     { grid-column:span 4; }
+  .cag-df-card.size-grid      { grid-column:span 4; }
+  .cag-df-card.size-hero h2 { font-size:30px; }
+}
+@media (min-width:1024px) {
+  .cag-df-card.size-hero      { grid-column:span 8; grid-row:span 2; min-height:480px; }
+  .cag-df-card.size-secondary { grid-column:span 4; }
+  .cag-df-card.size-small     { grid-column:span 4; }
+  .cag-df-card.size-grid      { grid-column:span 3; }
+  .cag-df-card.size-hero h2 { font-size:42px; }
+}
+
+/* ── Retailer pill (shown on hero card only; platforms are filter-only, not displayed) ── */
+.cag-df-ptag { display:inline-block; padding:2px 7px; border-radius:3px; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:#e4e2e1; background:rgba(255,255,255,0.1); }
+
+/* ── Empty / error states ────────────────────────────────────────── */
+.cag-df-empty, .cag-df-error { grid-column:1 / -1; padding:50px 20px; text-align:center; font-family:'Space Grotesk',sans-serif; font-weight:700; }
+.cag-df-empty { color:#becab9; }
+.cag-df-error { color:#ef4444; }
+</style>
+
+<div class="cag-df-wrap" id="cag-df-root">
+    <div class="cag-df-header">
+        <h3 class="cag-df-title">{$title}</h3>
+        <div class="cag-df-filters">
+            <div class="cag-df-dropdown">
+                <button type="button" class="cag-df-btn cag-df-btn-narrow active" id="cag-df-date-btn">48h &#9662;</button>
+                <div class="cag-df-panel" id="cag-df-date-panel">
+                    <a href="#" class="cag-df-item" data-hours="24">24h</a>
+                    <a href="#" class="cag-df-item" data-hours="48">48h</a>
+                    <a href="#" class="cag-df-item" data-days="7">7d</a>
+                    <a href="#" class="cag-df-item" data-days="30">30d</a>
+                </div>
+            </div>
+            <div class="cag-df-dropdown">
+                <button type="button" class="cag-df-btn cag-df-btn-narrow" id="cag-df-type-btn">Type &#9662;</button>
+                <div class="cag-df-panel" id="cag-df-type-panel">
+                    <label class="cag-df-item"><input type="checkbox" value="deals" data-group="type"> Deals</label>
+                    <label class="cag-df-item"><input type="checkbox" value="news" data-group="type"> News</label>
+                </div>
+            </div>
+            <div class="cag-df-dropdown">
+                <button type="button" class="cag-df-btn" id="cag-df-plat-btn">Platform &#9662;</button>
+                <div class="cag-df-panel align-right" id="cag-df-plat-panel">
+                    <label class="cag-df-item"><input type="checkbox" value="nintendo" data-group="platform"> Nintendo</label>
+                    <label class="cag-df-item"><input type="checkbox" value="pc" data-group="platform"> PC / Steam</label>
+                    <label class="cag-df-item"><input type="checkbox" value="playstation" data-group="platform"> PlayStation</label>
+                    <label class="cag-df-item"><input type="checkbox" value="xbox" data-group="platform"> Xbox</label>
+                    <label class="cag-df-item"><input type="checkbox" value="merch" data-group="platform"> Merch</label>
+                </div>
+            </div>
+            <div class="cag-df-dropdown">
+                <button type="button" class="cag-df-btn" id="cag-df-store-btn">Store &#9662;</button>
+                <div class="cag-df-panel align-right" id="cag-df-store-panel"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="cag-df-grid" id="cag-df-grid">
+        <xf:comment>Server-side first paint; JS rewrites this on load.</xf:comment>
+    </div>
+
+    <script type="application/json" id="cag-df-initial">{$dealsJson|raw}</script>
+</div>
+
+<script>
+(function() {
+    var root = document.getElementById('cag-df-root');
+    if (!root) return;
+    var grid = document.getElementById('cag-df-grid');
+    var dateBtn = document.getElementById('cag-df-date-btn');
+
+    var allDeals = [];
+    try {
+        var initialEl = document.getElementById('cag-df-initial');
+        if (initialEl) allDeals = JSON.parse(initialEl.textContent || '[]');
+    } catch (e) { allDeals = []; }
+
+    var selectedTypes = new Set();
+    var selectedPlatforms = new Set();
+    var selectedRetailers = new Set();
+
+    function esc(s) {
+        var d = document.createElement('div');
+        d.textContent = s == null ? '' : String(s);
+        return d.innerHTML;
+    }
+
+    function fmtDate(s) {
+        if (!s) return '';
+        var d = new Date(s);
+        if (isNaN(d)) return '';
+        return (d.getUTCMonth() + 1) + '/' + d.getUTCDate();
+    }
+
+    function getPlatforms(title, retailer) {
+        var t = (title || '') + ' ' + (retailer || '');
+        var p = [];
+        if (/\bPC(?:DD)?\b|\bPCDD\b|\bSteam\b/i.test(t)) p.push('pc');
+        if (/\bPS[45]\b|\bPlayStation\b|\bPSN\b/i.test(t)) p.push('playstation');
+        if (/\bSwitch\b|\beShop\b|\bNintendo\b/i.test(t)) p.push('nintendo');
+        if (/\bXbox\b|\bGame Pass\b/i.test(t)) p.push('xbox');
+        // Merch detection split into short lines — XF's template editor hard-wraps
+        // long lines, which produces literal newlines inside regex literals (parse error).
+        if (/\bshirt\b|\bfigure\b|\bplush\b|\bfunko\b/i.test(t)) p.push('merch');
+        else if (/\blego\b|\bstatue\b|\bpin\b|\btoy\b/i.test(t)) p.push('merch');
+        else if (/\bmerch\b|box.?lunch|big bad toy/i.test(t)) p.push('merch');
+        return p;
+    }
+
+    // getPlatforms() above is only used by applyFilter() — platforms aren't displayed on cards.
+
+    function normalizeRetailer(r) {
+        if (!r) return null;
+        // Strip trailing "w/ code", "with code", etc. Split into short patterns —
+        // XF's template editor hard-wraps long lines, breaking regex literals.
+        r = r.replace(/\s+w\/.*/i, '').trim();
+        r = r.replace(/\s+with\s+code.*/i, '').trim();
+        r = r.replace(/\s+use\s+code.*/i, '').trim();
+        r = r.replace(/\s+promo\s+code?.*/i, '').trim();
+        r = r.replace(/\s+coupon(?:\s+code)?.*/i, '').trim();
+        r = r.replace(/\..*/, '').trim();
+        r = r.replace(/#ad\b/gi, '').trim();
+        r = r.replace(/[.,\s]+$/, '').trim();
+        if (!r) return null;
+        if (/^\d/.test(r)) return null;
+        if (/\b(?:am|pm|noon|midnight)\b/i.test(r)) return null;
+        if (/\b(?:et|pt|ct|mt|est|pst|cst|mst|edt|pdt|cdt|mdt)\b/i.test(r)) return null;
+        return r || null;
+    }
+
+    // ── Card renderers — match v2's hero / secondary / small / grid pattern ──
+    // All string-builder lines kept short — XF's template editor hard-wraps long
+    // lines, which produces literal newlines inside JS string literals (parse error).
+    function commonCardOpen(d, sizeClass) {
+        var url = esc(d.deal_link || '#');
+        var img = esc(d.image_url || '');
+        var title = esc(d.title || '');
+        var date = esc(fmtDate(d.post_date));
+        var h = '<a class="cag-df-card ' + sizeClass + '"';
+        h += ' href="' + url + '"';
+        h += ' target="_blank" rel="noopener">';
+        if (img) {
+            h += '<img class="cag-df-bg"';
+            h += ' src="' + img + '"';
+            h += ' alt="' + title + '"';
+            h += ' loading="lazy"/>';
+        } else {
+            h += '<div class="cag-df-noimg">&#9633;</div>';
+        }
+        h += '<div class="cag-df-grad cag-df-grad-strong"></div>';
+        if (date) h += '<div class="cag-df-date">' + date + '</div>';
+        return h;
+    }
+
+    function heroCard(d) {
+        var title = esc(d.title || '');
+        var price = esc(d.price || '');
+        var retailer = esc(d.retailer || '');
+        var isNews = !d.is_ad;
+        var h = commonCardOpen(d, 'size-hero');
+        h += '<div class="cag-df-content">';
+        if (retailer) {
+            h += '<div class="cag-df-ptags">';
+            h += '<span class="cag-df-ptag">' + retailer + '</span>';
+            h += '</div>';
+        }
+        if (isNews) {
+            h += '<h2 style="font-size:20px;">' + title + '</h2>';
+        } else {
+            h += '<h2>' + title + '</h2>';
+            if (price) {
+                h += '<div style="margin-top:14px;">';
+                h += '<span class="cag-df-price">' + price + '</span>';
+                h += '</div>';
+            }
+        }
+        h += '</div></a>';
+        return h;
+    }
+
+    function secondaryCard(d) {
+        var title = esc(d.title || '');
+        var price = esc(d.price || '');
+        var retailer = esc(d.retailer || '');
+        var isNews = !d.is_ad;
+        var h = commonCardOpen(d, 'size-secondary');
+        h += '<div class="cag-df-content">';
+        h += '<h3>' + title + '</h3>';
+        if (!isNews && (price || retailer)) {
+            h += '<div class="cag-df-priceline" style="margin-top:10px;">';
+            if (price) h += '<span class="cag-df-price">' + price + '</span>';
+            if (retailer) h += '<span class="cag-df-retailer">' + retailer + '</span>';
+            h += '</div>';
+        }
+        h += '</div></a>';
+        return h;
+    }
+
+    function smallCard(d) {
+        var title = esc(d.title || '');
+        var price = esc(d.price || '');
+        var retailer = esc(d.retailer || '');
+        var isNews = !d.is_ad;
+        var h = commonCardOpen(d, 'size-small');
+        h += '<div class="cag-df-content">';
+        h += '<h4>' + title + '</h4>';
+        if (!isNews && (price || retailer)) {
+            h += '<div class="cag-df-priceline" style="margin-top:8px;">';
+            if (price) h += '<span class="cag-df-price">' + price + '</span>';
+            if (retailer) h += '<span class="cag-df-retailer">' + retailer + '</span>';
+            h += '</div>';
+        }
+        h += '</div></a>';
+        return h;
+    }
+
+    function gridCard(d) {
+        var title = esc(d.title || '');
+        var price = esc(d.price || '');
+        var retailer = esc(d.retailer || '');
+        var isNews = !d.is_ad;
+        var h = commonCardOpen(d, 'size-grid');
+        h += '<div class="cag-df-content">';
+        h += '<h4>' + title + '</h4>';
+        if (!isNews && (price || retailer)) {
+            h += '<div class="cag-df-priceline" style="margin-top:6px;">';
+            if (price) h += '<span class="cag-df-price">' + price + '</span>';
+            if (retailer) h += '<span class="cag-df-retailer">' + retailer + '</span>';
+            h += '</div>';
+        }
+        h += '</div></a>';
+        return h;
+    }
+
+    function renderGrid(deals) {
+        if (!deals.length) {
+            grid.innerHTML = '<div class="cag-df-empty">No deals match these filters.</div>';
+            return;
+        }
+        var html = '';
+        for (var i = 0; i < deals.length; i++) {
+            if (i === 0) html += heroCard(deals[i]);
+            else if (i === 1) html += secondaryCard(deals[i]);
+            else if (i === 2) html += smallCard(deals[i]);
+            else html += gridCard(deals[i]);
+        }
+        grid.innerHTML = html;
+    }
+
+    function getTopRetailers() {
+        var counts = {};
+        allDeals.forEach(function(d) {
+            var r = normalizeRetailer(d.retailer);
+            if (r) counts[r] = (counts[r] || 0) + 1;
+        });
+        var keys = Object.keys(counts);
+        keys.sort(function(a, b) { return counts[b] - counts[a]; });
+        return keys.slice(0, 25);
+    }
+
+    function renderRetailerPanel() {
+        var sorted = getTopRetailers();
+        sorted.sort(function(a, b) {
+            return a.toLowerCase().localeCompare(b.toLowerCase());
+        });
+        var html = '';
+        sorted.forEach(function(r) {
+            var checked = selectedRetailers.has(r) ? ' checked' : '';
+            html += '<label class="cag-df-item">';
+            html += '<input type="checkbox"';
+            html += ' value="' + esc(r) + '"';
+            html += ' data-group="retailer"' + checked + '> ';
+            html += esc(r);
+            html += '</label>';
+        });
+        var panel = document.getElementById('cag-df-store-panel');
+        if (panel) panel.innerHTML = html;
+    }
+
+    function platformMatch(d) {
+        var plats = getPlatforms(d.title || '', d.retailer || '');
+        for (var i = 0; i < plats.length; i++) {
+            if (selectedPlatforms.has(plats[i])) return true;
+        }
+        return false;
+    }
+
+    function applyFilter() {
+        renderGrid(allDeals.filter(function(d) {
+            if (!d.image_url) return false;
+            var platformOk = selectedPlatforms.size === 0 || platformMatch(d);
+            var typeOk = selectedTypes.size === 0 ||
+                (selectedTypes.has('deals') && d.is_ad !== 0) ||
+                (selectedTypes.has('news') && d.is_ad === 0);
+            var retOk = selectedRetailers.size === 0 ||
+                selectedRetailers.has(normalizeRetailer(d.retailer));
+            return platformOk && typeOk && retOk;
+        }));
+    }
+
+    async function fetchDeals(param) {
+        grid.innerHTML = '<div class="cag-df-empty">Loading&hellip;</div>';
+        try {
+            var qs = param.hours ? 'hours=' + param.hours : 'days=' + param.days;
+            var url = 'https://deals.cheapassgamer.com/api/deals?' + qs;
+            var res = await fetch(url);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            allDeals = await res.json();
+            renderRetailerPanel();
+            applyFilter();
+        } catch (e) {
+            grid.innerHTML = '<div class="cag-df-error">Failed to load deals.</div>';
+        }
+    }
+
+    // Dropdown toggle + outside-click close
+    var PANELS = [
+        'cag-df-date-panel',
+        'cag-df-type-panel',
+        'cag-df-plat-panel',
+        'cag-df-store-panel'
+    ];
+    function closeAll() {
+        PANELS.forEach(function(id) {
+            var p = document.getElementById(id);
+            if (p) p.classList.remove('open');
+        });
+    }
+    document.addEventListener('click', function(e) {
+        var inside = false;
+        for (var i = 0; i < PANELS.length; i++) {
+            var p = document.getElementById(PANELS[i]);
+            if (p && p.contains(e.target)) { inside = true; break; }
+        }
+        if (!inside) closeAll();
+    });
+    var DROPDOWN_PAIRS = [
+        ['cag-df-date-btn', 'cag-df-date-panel'],
+        ['cag-df-type-btn', 'cag-df-type-panel'],
+        ['cag-df-plat-btn', 'cag-df-plat-panel'],
+        ['cag-df-store-btn', 'cag-df-store-panel']
+    ];
+    DROPDOWN_PAIRS.forEach(function(pair) {
+        var btn = document.getElementById(pair[0]);
+        var panel = document.getElementById(pair[1]);
+        if (!btn || !panel) return;
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var opening = !panel.classList.contains('open');
+            closeAll();
+            if (opening) panel.classList.add('open');
+        });
+    });
+
+    // Date filter → live API fetch
+    document.querySelectorAll('#cag-df-date-panel .cag-df-item').forEach(function(el) {
+        el.addEventListener('click', function(e) {
+            e.preventDefault();
+            var hours = el.dataset.hours, days = el.dataset.days;
+            dateBtn.textContent = (hours ? hours + 'h' : days + 'd') + ' ▾';
+            closeAll();
+            fetchDeals(hours ? { hours: hours } : { days: days });
+        });
+    });
+
+    // Type / Platform / Store → client-side filter on loaded array
+    document.addEventListener('change', function(e) {
+        var group = e.target.dataset && e.target.dataset.group;
+        if (!group) return;
+        var set = group === 'type' ? selectedTypes
+                : group === 'platform' ? selectedPlatforms
+                : group === 'retailer' ? selectedRetailers
+                : null;
+        if (!set) return;
+        if (e.target.checked) set.add(e.target.value); else set.delete(e.target.value);
+        applyFilter();
+    });
+
+    // Initial paint from server-supplied JSON
+    renderRetailerPanel();
+    applyFilter();
+})();
+</script>
+</xf:if>
