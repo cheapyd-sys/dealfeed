@@ -178,10 +178,20 @@
 
     function normalizeRetailer(r) {
         if (!r) return null;
-        r = r.replace(/\s+(?:w\/|with\s+code|use\s+code|promo\s+code?|coupon(?:\s+code)?)\s*.*/i, '').trim();
-        r = r.replace(/\..*/, '').replace(/#ad\b/gi, '').replace(/[.,\s]+$/, '').trim();
+        // Strip trailing "w/ code", "with code", etc. Split into short patterns —
+        // XF's template editor hard-wraps long lines, breaking regex literals.
+        r = r.replace(/\s+w\/.*/i, '').trim();
+        r = r.replace(/\s+with\s+code.*/i, '').trim();
+        r = r.replace(/\s+use\s+code.*/i, '').trim();
+        r = r.replace(/\s+promo\s+code?.*/i, '').trim();
+        r = r.replace(/\s+coupon(?:\s+code)?.*/i, '').trim();
+        r = r.replace(/\..*/, '').trim();
+        r = r.replace(/#ad\b/gi, '').trim();
+        r = r.replace(/[.,\s]+$/, '').trim();
+        if (!r) return null;
         if (/^\d/.test(r)) return null;
-        if (/\b(?:am|pm|noon|midnight|et|pt|ct|mt|est|pst|cst|mst|edt|pdt|cdt|mdt)\b/i.test(r)) return null;
+        if (/\b(?:am|pm|noon|midnight)\b/i.test(r)) return null;
+        if (/\b(?:et|pt|ct|mt|est|pst|cst|mst|edt|pdt|cdt|mdt)\b/i.test(r)) return null;
         return r || null;
     }
 
