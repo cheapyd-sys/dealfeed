@@ -130,7 +130,7 @@
         {{-- Server-side first paint — the JS layer rewrites this on load for filter responsiveness. --}}
     </div>
 
-    <script type="application/json" id="cag-df-initial">{{ raw($dealsJson) }}</script>
+    <script type="application/json" id="cag-df-initial">{$dealsJson|raw}</script>
 </div>
 
 <script>
