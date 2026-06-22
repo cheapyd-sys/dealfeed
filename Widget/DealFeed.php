@@ -21,9 +21,15 @@ class DealFeed extends AbstractWidget
     public const CACHE_KEY = 'cag_deal_feed_48h';
     public const CACHE_TTL = 900; // 15 minutes — matches cron cadence (5 min) ×3.
 
+    // How many deals to ship in the initial server-rendered JSON. The JS widget
+    // displays 12 cards initially then paginates client-side through this pool.
+    // Larger = more pagination room without a fresh /api/deals call, but bigger
+    // initial HTML payload.
+    public const POOL_SIZE = 60;
+
     protected $defaultOptions = [
         'title' => 'Hottest Deals',
-        'limit' => 12,
+        'limit' => self::POOL_SIZE,
     ];
 
     public function render()
@@ -34,13 +40,13 @@ class DealFeed extends AbstractWidget
         if (!$deals) {
             /** @var \CAG\DealFeed\Service\DealApiClient $client */
             $client = $app->service('CAG\DealFeed:DealApiClient');
-            $deals = $client->fetch(48, (int) ($this->options['limit'] ?? 12));
+            $deals = $client->fetch(48, self::POOL_SIZE);
             if ($deals) {
                 $this->writeToSimpleCache($app, $deals);
             }
         }
 
-        $limit = (int) ($this->options['limit'] ?? 12);
+        $limit = (int) ($this->options['limit'] ?? self::POOL_SIZE);
         if ($limit > 0 && is_array($deals)) {
             $deals = array_slice($deals, 0, $limit);
         }

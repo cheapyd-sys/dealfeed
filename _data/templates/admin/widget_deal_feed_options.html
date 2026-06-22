@@ -1,3 +1,3 @@
 <xf:textboxrow name="options[title]" value="{$options.title}" label="Title" hint="Heading displayed above the deal grid (default: Hottest Deals)" />
 
-<xf:numberboxrow name="options[limit]" value="{$options.limit}" min="1" max="60" label="Item limit" hint="Maximum number of deal cards to render on first page-load. Date-filter changes always fetch the full window from the worker." />
+<xf:numberboxrow name="options[limit]" value="{$options.limit}" min="12" max="120" label="Initial deal pool" hint="How many deals to ship in the initial page-load JSON (default 60). The JS widget shows 12 cards and paginates client-side through this pool. Larger = more 'Load More' clicks before a fresh API fetch is needed." />
