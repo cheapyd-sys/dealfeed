@@ -1,3 +1,11 @@
 <xf:title>{$pageTitle}</xf:title>
 
+<style>
+/* Hide XF chrome (page header, breadcrumbs, default padding) on this page only.
+   The deal feed widget supplies its own header — duplicates look noisy. */
+.p-body-header { display: none !important; }
+.p-breadcrumbs:not(.p-nav-list) { display: none !important; }
+.p-body-pageContent .p-body-main .p-body-pageContent { padding-top: 0 !important; }
+</style>
+
 <xf:widget class="CAG\DealFeed\Widget\DealFeed" />
