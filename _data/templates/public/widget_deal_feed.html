@@ -296,6 +296,7 @@
                 retailers: Array.from(selectedRetailers)
             }));
         } catch (e) {}
+        syncFiltersToUrl();
     }
 
     function loadFilters() {
@@ -304,6 +305,49 @@
             if (!raw) return null;
             var s = JSON.parse(raw);
             if (s.v !== 1) return null;
+            return s;
+        } catch (e) { return null; }
+    }
+
+    // URL-based sharing — encode active filters into the address bar so a user
+    // can copy the URL and share. URL params take precedence over localStorage
+    // on initial page load.
+    function syncFiltersToUrl() {
+        try {
+            var params = new URLSearchParams();
+            if (lastDateParam.hours && lastDateParam.hours !== 48) {
+                params.set('w', lastDateParam.hours + 'h');
+            } else if (lastDateParam.days) {
+                params.set('w', lastDateParam.days + 'd');
+            }
+            if (selectedTypes.size) params.set('t', Array.from(selectedTypes).join(','));
+            if (selectedPlatforms.size) params.set('p', Array.from(selectedPlatforms).join(','));
+            if (selectedRetailers.size) params.set('r', Array.from(selectedRetailers).join(','));
+            var qs = params.toString();
+            var newUrl = window.location.pathname + (qs ? '?' + qs : '') + window.location.hash;
+            window.history.replaceState(null, '', newUrl);
+        } catch (e) {}
+    }
+
+    function loadFiltersFromUrl() {
+        try {
+            var params = new URLSearchParams(window.location.search);
+            if (![...params.keys()].length) return null;
+            var s = { v: 1, hours: null, days: null, types: [], platforms: [], retailers: [] };
+            var w = params.get('w');
+            if (w) {
+                var m = /^(\d+)([hd])$/.exec(w);
+                if (m) {
+                    if (m[2] === 'h') s.hours = Number(m[1]);
+                    else s.days = Number(m[1]);
+                }
+            }
+            if (params.get('t')) s.types = params.get('t').split(',').filter(Boolean);
+            if (params.get('p')) s.platforms = params.get('p').split(',').filter(Boolean);
+            if (params.get('r')) s.retailers = params.get('r').split(',').filter(Boolean);
+            // Only return if anything was actually set — empty URL params shouldn't
+            // override localStorage just by existing.
+            if (!s.hours && !s.days && !s.types.length && !s.platforms.length && !s.retailers.length) return null;
             return s;
         } catch (e) { return null; }
     }
@@ -688,7 +732,9 @@
     // fresh data (if the saved date window differs from the default 48h that
     // the server-rendered JSON already covers) or paint from the cached JSON.
     (function initWithSavedFilters() {
-        var saved = loadFilters();
+        // URL params take precedence — a shared link's filters should win
+        // over whatever the visitor previously had in localStorage.
+        var saved = loadFiltersFromUrl() || loadFilters();
         if (saved) {
             saved.types.forEach(function(v) { selectedTypes.add(v); });
             saved.platforms.forEach(function(v) { selectedPlatforms.add(v); });
