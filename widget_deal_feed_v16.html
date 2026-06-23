@@ -101,12 +101,19 @@
 .cag-df-card:hover img.cag-df-bg { transform:scale(1.05); }
 /* Per-deal editor opt-in zoom — for source photos with lots of padding
    around the product. Only kicks in when the editor flags a deal via
-   the feed editor's "Zoom image" checkbox. */
+   the feed editor's "Zoom in" checkbox. */
 .cag-df-card.cag-df-zoom img.cag-df-bg {
     object-position:center 40%;
     transform:scale(1.22); transform-origin:center 50%;
 }
 .cag-df-card.cag-df-zoom:hover img.cag-df-bg { transform:scale(1.28); }
+/* Per-deal editor opt-in zoom OUT — switches object-fit to contain so the
+   whole image shows. Empty space at top/sides becomes card background. */
+.cag-df-card.cag-df-fit img.cag-df-bg {
+    object-fit:contain; object-position:center;
+    transform:none;
+}
+.cag-df-card.cag-df-fit:hover img.cag-df-bg { transform:none; }
 .cag-df-card .cag-df-noimg { position:absolute; inset:0; background:#2a2a2a; display:flex; align-items:center; justify-content:center; color:#3f4a3c; font-size:48px; font-family:'Space Grotesk',sans-serif; }
 .cag-df-card .cag-df-grad { position:absolute; inset:0; background:linear-gradient(to top, rgba(19,19,19,1) 0%, rgba(19,19,19,0.4) 45%, transparent 75%); }
 .cag-df-card .cag-df-grad-strong { background:linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 50%, transparent 80%); }
@@ -444,7 +451,9 @@
         var img = esc(d.image_url || '');
         var title = esc(d.title || '');
         var date = esc(fmtDate(d.post_date));
-        var classes = 'cag-df-card ' + sizeClass + (d.zoom_image ? ' cag-df-zoom' : '');
+        var classes = 'cag-df-card ' + sizeClass
+            + (d.zoom_image ? ' cag-df-zoom' : '')
+            + (d.shrink_image ? ' cag-df-fit' : '');
         var h = '<a class="' + classes + '"';
         h += ' href="' + url + '"';
         h += ' target="_blank" rel="noopener">';
