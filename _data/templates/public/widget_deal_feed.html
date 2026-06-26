@@ -427,18 +427,22 @@
         setBadge('cag-df-store-btn', 'Store', selectedRetailers.size);
     }
 
-    // Builds the date-button label from the current time window + sort mode.
-    // "48h ▾" by default; "Newest · 48h ▾" when chronological sort is active.
-    // The 'Newest' indicator makes it visible in the collapsed filter bar that
-    // the feed is no longer engagement-ranked.
-    function dateBtnLabel() {
+    // Newest mode bypasses the user-selected time window — fixed at 7d and
+    // sorted by date. Hot mode shows the selected time window sorted by engagement.
+    var NEWEST_PARAM = { days: 7 };
+    function updateDateBtn() {
+        if (!dateBtn) return;
+        if (selectedSort === 'date') { dateBtn.textContent = 'Newest ▾'; return; }
         var win = lastDateParam.hours ? lastDateParam.hours + 'h'
                 : lastDateParam.days  ? lastDateParam.days  + 'd'
                 : '48h';
-        return (selectedSort === 'date' ? 'Newest · ' : '') + win + ' ▾';
+        dateBtn.textContent = win + ' ▾';
     }
-    function updateDateBtn() {
-        if (dateBtn) dateBtn.textContent = dateBtnLabel();
+    function setSortPillActive() {
+        document.querySelectorAll('#cag-df-date-panel .cag-df-sort-pill').forEach(function(p) {
+            if (p.dataset.sort === selectedSort) p.classList.add('active');
+            else p.classList.remove('active');
+        });
     }
 
     function esc(s) {
@@ -786,31 +790,37 @@
         });
     });
 
-    // Date filter → live API fetch
+    // Date filter → live API fetch. Picking a date implies leaving Newest mode
+    // since the user is engaging with the time window.
     document.querySelectorAll('#cag-df-date-panel .cag-df-item').forEach(function(el) {
         el.addEventListener('click', function(e) {
             e.preventDefault();
             var hours = el.dataset.hours, days = el.dataset.days;
             closeAll();
             lastDateParam = hours ? { hours: Number(hours) } : { days: Number(days) };
+            if (selectedSort === 'date') { selectedSort = 'score'; setSortPillActive(); }
             updateDateBtn();
             fetchDeals(lastDateParam);
         });
     });
 
-    // Sort pills inside the date panel — re-sort without re-fetching.
+    // Sort pills — Newest forces a 7d window (ignores the date filter), Hot
+    // returns to the last-selected window. We refetch only when the active
+    // window actually needs to change; otherwise just re-sort.
     document.querySelectorAll('#cag-df-date-panel .cag-df-sort-pill').forEach(function(el) {
         el.addEventListener('click', function(e) {
             e.preventDefault();
             var mode = el.dataset.sort;
             if (!mode || mode === selectedSort) return;
             selectedSort = mode;
-            document.querySelectorAll('#cag-df-date-panel .cag-df-sort-pill').forEach(function(p) {
-                if (p.dataset.sort === selectedSort) p.classList.add('active');
-                else p.classList.remove('active');
-            });
+            setSortPillActive();
             updateDateBtn();
-            applyFilter();
+            if (mode === 'date' && lastDateParam.days !== 7) {
+                lastDateParam = { days: 7 };
+                fetchDeals(lastDateParam);
+            } else {
+                applyFilter();
+            }
         });
     });
 
@@ -840,10 +850,7 @@
             saved.retailers.forEach(function(v) { selectedRetailers.add(v); });
             if (saved.sort === 'date' || saved.sort === 'score') {
                 selectedSort = saved.sort;
-                document.querySelectorAll('#cag-df-date-panel .cag-df-sort-pill').forEach(function(p) {
-                    if (p.dataset.sort === selectedSort) p.classList.add('active');
-                    else p.classList.remove('active');
-                });
+                setSortPillActive();
             }
             // Check the hardcoded Type + Platform checkboxes in the DOM.
             // Retailer checkboxes get checked via renderRetailerPanel().
@@ -857,6 +864,14 @@
             }
             var hours = Number(saved.hours);
             var days = Number(saved.days);
+            // Newest mode always uses the 7d window regardless of what was
+            // saved — keeps the sort/window relationship consistent.
+            if (selectedSort === 'date') {
+                lastDateParam = { days: 7 };
+                updateDateBtn();
+                fetchDeals(lastDateParam);
+                return;
+            }
             if (hours && hours !== 48) {
                 lastDateParam = { hours: hours };
                 updateDateBtn();
@@ -869,8 +884,6 @@
                 fetchDeals(lastDateParam);
                 return;
             }
-            // Restored a saved sort but kept the default 48h window — still
-            // need to reflect 'Newest' in the date button label.
             updateDateBtn();
         }
         // Default path — server-rendered JSON already has the 48h window.
