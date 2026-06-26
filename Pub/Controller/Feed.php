@@ -45,7 +45,7 @@ class Feed extends AbstractController
         }
 
         $viewParams = [
-            'pageTitle' => 'CAG Deal Feed',
+            'pageTitle' => 'Cheap Ass Gamer - CAG Deal Feed - Video Game Deals, Sales, & News',
         ];
         return $this->view('CAG\DealFeed:Feed\Index', 'cag_deal_feed_page', $viewParams);
     }
