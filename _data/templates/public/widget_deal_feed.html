@@ -324,7 +324,12 @@
 
     // Pagination state — initial render shows INITIAL_COUNT, then auto-loads up to
     // AUTO_LOAD_MAX more chunks, then a Load More button takes over.
-    var INITIAL_COUNT = 12;
+    //
+    // Counts are tuned to fit the grid cleanly without orphan rows. On lg the
+    // grid is hero(span 8, rowspan 2) + secondary(4) + small(4) for positions
+    // 0-2, then 4-col grid cards for the rest. 15 = 3 + 4 + 4 + 4 (clean).
+    // Each load_increment of 12 adds 3 more rows of 4 (also clean).
+    var INITIAL_COUNT = 15;
     var LOAD_INCREMENT = 12;
     var AUTO_LOAD_MAX = 3;
     var displayLimit = INITIAL_COUNT;
