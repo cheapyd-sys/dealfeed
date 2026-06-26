@@ -507,7 +507,13 @@
     // All string-builder lines kept short — XF's template editor hard-wraps long
     // lines, which produces literal newlines inside JS string literals (parse error).
     function commonCardOpen(d, sizeClass) {
-        var url = esc(d.deal_link || '#');
+        // Route through the worker's click tracker so we can log it + boost
+        // the score for engaging deals. Worker 302's to the editor-overridden
+        // link if set, else the raw deal_link. Falls back to raw deal_link
+        // defensively if for some reason the deal lacks an id.
+        var url = d.id
+            ? 'https://deals.cheapassgamer.com/c/d/' + encodeURIComponent(d.id)
+            : esc(d.deal_link || '#');
         var img = esc(d.image_url || '');
         var title = esc(d.title || '');
         var date = esc(fmtDate(d.post_date));
