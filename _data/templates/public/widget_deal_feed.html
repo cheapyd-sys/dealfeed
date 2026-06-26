@@ -160,6 +160,15 @@
   .cag-df-card.size-hero h2 { font-size:42px; }
 }
 
+/* Close gap between top ad and widget on mobile (preview page only) */
+@media (max-width:768px) {
+  body[data-template="cag_deal_feed_page"] .p-body { padding-top:4px; }
+  body[data-template="cag_deal_feed_page"] .p-body-inner > .p-breadcrumbs:not(.p-breadcrumbs--bottom) { display:none; }
+  body[data-template="cag_deal_feed_page"] .p-body-header { display:none; }
+  body[data-template="cag_deal_feed_page"] .cag-top { margin-bottom:0; }
+  body[data-template="cag_deal_feed_page"] .cag-df-wrap { padding:10px; }
+}
+
 /* ── Retailer pill (shown on hero card only; platforms are filter-only, not displayed) ── */
 .cag-df-ptag { display:inline-block; padding:2px 7px; border-radius:3px; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:#e4e2e1; background:rgba(255,255,255,0.1); }
 
@@ -217,6 +226,21 @@
 }
 .cag-df-light .cag-df-loadmore-btn:hover { background:#0c8c43; color:#fff; }
 .cag-df-light .cag-df-empty { color:#666; }
+
+/* Sort pills inside the date dropdown panel ── lets the user flip between
+   engagement-ranked ("Hot") and chronological ("Newest") without taking up
+   extra space in the filter row. */
+.cag-df-panel-divider { height:1px; background:#3f4a3c; margin:6px 12px; }
+.cag-df-sort-row { display:flex; gap:6px; align-items:center; padding:6px 12px 8px; }
+.cag-df-sort-label { font-size:9px; color:#899484; text-transform:uppercase; letter-spacing:0.06em; font-weight:700; margin-right:auto; }
+.cag-df-sort-pill { padding:3px 10px; border-radius:9999px; font-size:11px; font-weight:700; color:#becab9; background:#1f2020; border:1px solid #3f4a3c; cursor:pointer; transition:all 0.15s; font-family:'Space Grotesk',sans-serif; text-decoration:none; }
+.cag-df-sort-pill:hover { color:#e4e2e1; border-color:#899484; }
+.cag-df-sort-pill.active { border-color:#28dc6e; color:#28dc6e; background:rgba(40,220,110,0.08); }
+.cag-df-light .cag-df-panel-divider { background:#d8d8d8; }
+.cag-df-light .cag-df-sort-label { color:#666; }
+.cag-df-light .cag-df-sort-pill { color:#444; background:#fff; border-color:#d8d8d8; }
+.cag-df-light .cag-df-sort-pill:hover { color:#1a1a1a; border-color:#888; }
+.cag-df-light .cag-df-sort-pill.active { border-color:#0c8c43; color:#0c8c43; background:rgba(12,140,67,0.08); }
 </style>
 
 <xf:set var="$cagDfThemeClass" value="{{ $xf.style.style_id == 2 ? 'cag-df-light' : '' }}" />
@@ -239,6 +263,12 @@
                     <a href="#" class="cag-df-item" data-days="7">7 days</a>
                     <a href="#" class="cag-df-item" data-days="14">14 days</a>
                     <a href="#" class="cag-df-item" data-days="30">30 days</a>
+                    <div class="cag-df-panel-divider"></div>
+                    <div class="cag-df-sort-row">
+                        <span class="cag-df-sort-label">Sort</span>
+                        <a href="#" class="cag-df-sort-pill active" data-sort="score">Hot</a>
+                        <a href="#" class="cag-df-sort-pill" data-sort="date">Newest</a>
+                    </div>
                 </div>
             </div>
             <div class="cag-df-dropdown">
@@ -252,7 +282,7 @@
                 <button type="button" class="cag-df-btn" id="cag-df-plat-btn">Platform &#9662;</button>
                 <div class="cag-df-panel align-right" id="cag-df-plat-panel">
                     <label class="cag-df-item"><input type="checkbox" value="nintendo" data-group="platform"> Nintendo</label>
-                    <label class="cag-df-item"><input type="checkbox" value="pc" data-group="platform"> PC / Steam</label>
+                    <label class="cag-df-item"><input type="checkbox" value="pc" data-group="platform"> PC</label>
                     <label class="cag-df-item"><input type="checkbox" value="playstation" data-group="platform"> PlayStation</label>
                     <label class="cag-df-item"><input type="checkbox" value="xbox" data-group="platform"> Xbox</label>
                     <label class="cag-df-item"><input type="checkbox" value="merch" data-group="platform"> Merch</label>
@@ -288,6 +318,9 @@
     var selectedTypes = new Set();
     var selectedPlatforms = new Set();
     var selectedRetailers = new Set();
+    // 'score' = engagement-ranked (default, matches /api/deals server sort).
+    // 'date' = chronological newest-first using post_date.
+    var selectedSort = 'score';
 
     // Pagination state — initial render shows INITIAL_COUNT, then auto-loads up to
     // AUTO_LOAD_MAX more chunks, then a Load More button takes over.
@@ -312,7 +345,8 @@
                 days: lastDateParam.days || null,
                 types: Array.from(selectedTypes),
                 platforms: Array.from(selectedPlatforms),
-                retailers: Array.from(selectedRetailers)
+                retailers: Array.from(selectedRetailers),
+                sort: selectedSort
             }));
         } catch (e) {}
         syncFiltersToUrl();
@@ -342,6 +376,7 @@
             if (selectedTypes.size) params.set('t', Array.from(selectedTypes).join(','));
             if (selectedPlatforms.size) params.set('p', Array.from(selectedPlatforms).join(','));
             if (selectedRetailers.size) params.set('r', Array.from(selectedRetailers).join(','));
+            if (selectedSort && selectedSort !== 'score') params.set('s', selectedSort);
             var qs = params.toString();
             var newUrl = window.location.pathname + (qs ? '?' + qs : '') + window.location.hash;
             window.history.replaceState(null, '', newUrl);
@@ -364,9 +399,11 @@
             if (params.get('t')) s.types = params.get('t').split(',').filter(Boolean);
             if (params.get('p')) s.platforms = params.get('p').split(',').filter(Boolean);
             if (params.get('r')) s.retailers = params.get('r').split(',').filter(Boolean);
+            var sParam = params.get('s');
+            if (sParam === 'date' || sParam === 'score') s.sort = sParam;
             // Only return if anything was actually set — empty URL params shouldn't
             // override localStorage just by existing.
-            if (!s.hours && !s.days && !s.types.length && !s.platforms.length && !s.retailers.length) return null;
+            if (!s.hours && !s.days && !s.types.length && !s.platforms.length && !s.retailers.length && !s.sort) return null;
             return s;
         } catch (e) { return null; }
     }
@@ -406,14 +443,14 @@
     function getPlatforms(title, retailer) {
         var t = (title || '') + ' ' + (retailer || '');
         var p = [];
-        if (/\bPC(?:DD)?\b|\bPCDD\b|\bSteam\b/i.test(t)) p.push('pc');
+        if (/\bPC(?:DD)?\b|\bPCDD\b|\bSteam\b|\bEpic Games?\b|\bFanatical\b/i.test(t)) p.push('pc');
         if (/\bPS[45]\b|\bPlayStation\b|\bPSN\b/i.test(t)) p.push('playstation');
         // Nintendo also detects abbreviations in titles like "(S)", "(S2)", "(S/S2)".
         // Char classes [(] [)] [/] avoid the backslash escapes the v2 page uses —
         // XF's admin editor strips them when long lines wrap.
         if (/\bSwitch\b|\beShop\b|\bNintendo\b|[(]S2?(?:[/]S2)?[)]/i.test(t)) p.push('nintendo');
-        // Xbox also detects "(XB...", "(X)", "(X1)", "(XS)", "/X)", "/X1)", "/XS)".
-        if (/\bXbox\b|\bGame Pass\b|[(]XB|[/(]X(?:1|S)?[)]/i.test(t)) p.push('xbox');
+        // Xbox also detects "(XB...", "(X)", "(X1)", "(XS)", "/X)", "/X1)", "/XS)", and "/X/S".
+        if (/\bXbox\b|\bGame Pass\b|[(]XB|[/(]X(?:1|S)?[)]|[(/]X[/]S[/)]/i.test(t)) p.push('xbox');
         // Merch detection split into short lines — XF's template editor hard-wraps
         // long lines, which produces literal newlines inside regex literals (parse error).
         if (/\bshirt\b|\bfigure\b|\bplush\b|\bfunko\b/i.test(t)) p.push('merch');
@@ -664,6 +701,16 @@
                 selectedRetailers.has(normalizeRetailer(d.retailer));
             return platformOk && typeOk && retOk;
         });
+        // /api/deals returns score-sorted, so 'score' is a no-op. 'date'
+        // re-sorts in place on filteredDeals — allDeals stays untouched so
+        // toggling back is instant.
+        if (selectedSort === 'date') {
+            filteredDeals.sort(function(a, b) {
+                var da = a.post_date ? Date.parse(a.post_date) : 0;
+                var db = b.post_date ? Date.parse(b.post_date) : 0;
+                return db - da;
+            });
+        }
         displayLimit = INITIAL_COUNT;
         autoLoads = 0;
         renderGrid();
@@ -737,6 +784,21 @@
         });
     });
 
+    // Sort pills inside the date panel — re-sort without re-fetching.
+    document.querySelectorAll('#cag-df-date-panel .cag-df-sort-pill').forEach(function(el) {
+        el.addEventListener('click', function(e) {
+            e.preventDefault();
+            var mode = el.dataset.sort;
+            if (!mode || mode === selectedSort) return;
+            selectedSort = mode;
+            document.querySelectorAll('#cag-df-date-panel .cag-df-sort-pill').forEach(function(p) {
+                if (p.dataset.sort === selectedSort) p.classList.add('active');
+                else p.classList.remove('active');
+            });
+            applyFilter();
+        });
+    });
+
     // Type / Platform / Store → client-side filter on loaded array
     document.addEventListener('change', function(e) {
         var group = e.target.dataset && e.target.dataset.group;
@@ -761,6 +823,13 @@
             saved.types.forEach(function(v) { selectedTypes.add(v); });
             saved.platforms.forEach(function(v) { selectedPlatforms.add(v); });
             saved.retailers.forEach(function(v) { selectedRetailers.add(v); });
+            if (saved.sort === 'date' || saved.sort === 'score') {
+                selectedSort = saved.sort;
+                document.querySelectorAll('#cag-df-date-panel .cag-df-sort-pill').forEach(function(p) {
+                    if (p.dataset.sort === selectedSort) p.classList.add('active');
+                    else p.classList.remove('active');
+                });
+            }
             // Check the hardcoded Type + Platform checkboxes in the DOM.
             // Retailer checkboxes get checked via renderRetailerPanel().
             var staticBoxes = document.querySelectorAll('input[type="checkbox"][data-group]');
