@@ -427,6 +427,20 @@
         setBadge('cag-df-store-btn', 'Store', selectedRetailers.size);
     }
 
+    // Builds the date-button label from the current time window + sort mode.
+    // "48h ▾" by default; "Newest · 48h ▾" when chronological sort is active.
+    // The 'Newest' indicator makes it visible in the collapsed filter bar that
+    // the feed is no longer engagement-ranked.
+    function dateBtnLabel() {
+        var win = lastDateParam.hours ? lastDateParam.hours + 'h'
+                : lastDateParam.days  ? lastDateParam.days  + 'd'
+                : '48h';
+        return (selectedSort === 'date' ? 'Newest · ' : '') + win + ' ▾';
+    }
+    function updateDateBtn() {
+        if (dateBtn) dateBtn.textContent = dateBtnLabel();
+    }
+
     function esc(s) {
         var d = document.createElement('div');
         d.textContent = s == null ? '' : String(s);
@@ -777,9 +791,9 @@
         el.addEventListener('click', function(e) {
             e.preventDefault();
             var hours = el.dataset.hours, days = el.dataset.days;
-            dateBtn.textContent = (hours ? hours + 'h' : days + 'd') + ' ▾';
             closeAll();
             lastDateParam = hours ? { hours: Number(hours) } : { days: Number(days) };
+            updateDateBtn();
             fetchDeals(lastDateParam);
         });
     });
@@ -795,6 +809,7 @@
                 if (p.dataset.sort === selectedSort) p.classList.add('active');
                 else p.classList.remove('active');
             });
+            updateDateBtn();
             applyFilter();
         });
     });
@@ -844,16 +859,19 @@
             var days = Number(saved.days);
             if (hours && hours !== 48) {
                 lastDateParam = { hours: hours };
-                dateBtn.textContent = hours + 'h ▾';
+                updateDateBtn();
                 fetchDeals(lastDateParam);
                 return;
             }
             if (days) {
                 lastDateParam = { days: days };
-                dateBtn.textContent = days + 'd ▾';
+                updateDateBtn();
                 fetchDeals(lastDateParam);
                 return;
             }
+            // Restored a saved sort but kept the default 48h window — still
+            // need to reflect 'Newest' in the date button label.
+            updateDateBtn();
         }
         // Default path — server-rendered JSON already has the 48h window.
         renderRetailerPanel();
