@@ -295,10 +295,11 @@
         </div>
     </div>
 
-    <div class="cag-df-grid" id="cag-df-grid">{$cardsHtml|raw}</div>
+    <div class="cag-df-grid" id="cag-df-grid">
+        <xf:comment>Server-side first paint; JS rewrites this on load.</xf:comment>
+    </div>
 
     <script type="application/json" id="cag-df-initial">{$dealsJson|raw}</script>
-    <script type="application/ld+json">{$jsonLd|raw}</script>
 </div>
 
 <script>
@@ -886,26 +887,8 @@
             updateDateBtn();
         }
         // Default path — server-rendered JSON already has the 48h window.
-        // If SSR cards are already present AND no filters change the default
-        // view, keep the SSR HTML (avoids a brief flash + reduces work). We
-        // still seed filteredDeals so Load More + auto-load behave correctly.
         renderRetailerPanel();
-        var hasSSR = grid.firstElementChild
-            && grid.firstElementChild.classList
-            && grid.firstElementChild.classList.contains('cag-df-card');
-        var noFilters = selectedTypes.size === 0
-            && selectedPlatforms.size === 0
-            && selectedRetailers.size === 0;
-        if (hasSSR && noFilters && selectedSort === 'score') {
-            filteredDeals = allDeals.filter(function(d) { return !!d.image_url; });
-            displayLimit = INITIAL_COUNT;
-            autoLoads = 0;
-            updateLoadMore();
-            updateButtonBadges();
-            updateDateBtn();
-        } else {
-            applyFilter();
-        }
+        applyFilter();
     })();
 })();
 </script>
