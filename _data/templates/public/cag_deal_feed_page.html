@@ -1,5 +1,25 @@
 <xf:title>{$pageTitle}</xf:title>
-<xf:head><link rel="canonical" href="{$xf.options.boardUrl}/" /></xf:head>
+<xf:head>
+    <link rel="canonical" href="{$xf.options.boardUrl}/" />
+    <xf:if is="$ogDescription is not empty">
+        <meta property="og:description" content="{$ogDescription}" />
+        <meta name="twitter:description" content="{$ogDescription}" />
+        <meta name="description" content="{$ogDescription}" />
+    </xf:if>
+    <xf:if is="$ogImage is not empty">
+        <meta property="og:image" content="{$ogImage}" />
+        <xf:if is="$ogImageAlt is not empty">
+            <meta property="og:image:alt" content="{$ogImageAlt}" />
+        </xf:if>
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="{$ogImage}" />
+        <xf:if is="$ogImageAlt is not empty">
+            <meta name="twitter:image:alt" content="{$ogImageAlt}" />
+        </xf:if>
+        <!-- Suppress XF's default site-logo og:image fallback -->
+        <xf:set var="$head.meta_image_url" value="1" />
+    </xf:if>
+</xf:head>
 
 <style>
 /* Hide XF chrome (page header, breadcrumbs, default padding) on this page only.

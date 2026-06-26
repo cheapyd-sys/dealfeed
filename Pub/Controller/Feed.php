@@ -44,9 +44,36 @@ class Feed extends AbstractController
             return $this->message('Cache refreshed');
         }
 
+        $topDeal = $this->getTopDealForMeta();
+
         $viewParams = [
-            'pageTitle' => 'Cheap Ass Gamer - CAG Deal Feed - Video Game Deals, Sales, & News',
+            'pageTitle'     => 'Cheap Ass Gamer - CAG Deal Feed - Video Game Deals, Sales, & News',
+            'ogImage'       => $topDeal['image_url'] ?? null,
+            'ogImageAlt'    => $topDeal['title'] ?? null,
+            'ogDescription' => $topDeal
+                ? "Today's top deal: {$topDeal['title']}. Plus more video game deals, sales, and news from Cheap Ass Gamer."
+                : 'Daily video game deals, sales, and news from CheapAssGamer.com — ranked by community engagement.',
         ];
         return $this->view('CAG\DealFeed:Feed\Index', 'cag_deal_feed_page', $viewParams);
+    }
+
+    /**
+     * Pulls the first cached deal that has both a title and an image, so
+     * social-share previews of the homepage show the current top deal's
+     * image instead of the generic site logo. Reads from the same
+     * simpleCache the widget uses — no extra DB or HTTP cost.
+     */
+    protected function getTopDealForMeta(): ?array
+    {
+        $entry = \XF::app()->simpleCache()
+            [\CAG\DealFeed\Widget\DealFeed::ADDON_ID]
+            [\CAG\DealFeed\Widget\DealFeed::CACHE_KEY] ?? null;
+        if (!is_array($entry) || ($entry['expires'] ?? 0) <= time()) return null;
+        $data = $entry['data'] ?? null;
+        if (!is_array($data)) return null;
+        foreach ($data as $deal) {
+            if (!empty($deal['image_url']) && !empty($deal['title'])) return $deal;
+        }
+        return null;
     }
 }
