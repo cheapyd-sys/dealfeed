@@ -52,6 +52,14 @@ class Setup extends AbstractSetup
                 'addon_id'         => 'CAG/DealFeed',
             ]);
         }
+        // Even if the row already exists, invalidate XF's widget-definition
+        // cache. After `xf-addon:rebuild`, the row in `xf_widget_definition`
+        // can survive while the cached list (in xf_data_registry under key
+        // 'widgets') goes stale — and the widget container only reads the
+        // cache, never the table directly. Without this delete, the homepage
+        // continues throwing InvalidArgumentException until the next time
+        // the registry naturally rebuilds.
+        \XF::registry()->delete('widgets');
     }
 
     public function postInstall(array &$stateChanges): void
