@@ -524,10 +524,16 @@
         h += ' href="' + url + '"';
         h += ' target="_blank" rel="noopener">';
         if (img) {
+            // Hero card is always above the fold and IS the LCP element —
+            // it must NOT be lazy-loaded. Tell the browser to prioritize it
+            // so the fetch starts immediately + at high priority. Other card
+            // sizes stay lazy since they're below the fold.
+            var isHero = sizeClass === 'size-hero';
             h += '<img class="cag-df-bg"';
             h += ' src="' + img + '"';
             h += ' alt="' + title + '"';
-            h += ' loading="lazy"/>';
+            h += isHero ? ' fetchpriority="high"' : ' loading="lazy"';
+            h += '/>';
         } else {
             h += '<div class="cag-df-noimg">&#9633;</div>';
         }

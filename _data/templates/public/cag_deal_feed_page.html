@@ -2,6 +2,13 @@
 
 <xf:head option="canonical"><link rel="canonical" href="{$xf.options.boardUrl}/" /></xf:head>
 
+<xf:if is="$ogImage is not empty">
+    <xf:comment>Preload the hero card image so the fetch starts during HTML parse rather than after JS injects the &lt;img&gt; tag. Drops LCP for the largest content element by ~1-2s on most connections.</xf:comment>
+    <xf:head option="preload_hero">
+        <link rel="preload" as="image" href="{$ogImage}" fetchpriority="high" />
+    </xf:head>
+</xf:if>
+
 <xf:head option="dealfeed_social_meta">
     <xf:if is="$ogDescription is not empty">
         <meta name="description" content="{$ogDescription}" />
