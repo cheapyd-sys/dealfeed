@@ -698,6 +698,16 @@
         sorted.sort(function(a, b) {
             return a.toLowerCase().localeCompare(b.toLowerCase());
         });
+        // Drop any selectedRetailers that no longer appear in the deal data.
+        // Without this, a retailer name that was once auto-extracted (or a
+        // typo that's since been corrected) can stay "checked" in localStorage
+        // forever, filtering out everything because no current deal matches.
+        var availableSet = new Set(sorted);
+        var removed = false;
+        selectedRetailers.forEach(function(r) {
+            if (!availableSet.has(r)) { selectedRetailers.delete(r); removed = true; }
+        });
+        if (removed) saveFilters();
         var html = '';
         sorted.forEach(function(r) {
             var checked = selectedRetailers.has(r) ? ' checked' : '';
