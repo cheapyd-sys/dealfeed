@@ -565,18 +565,14 @@
         var isNews = !d.is_ad;
         var h = commonCardOpen(d, 'size-hero');
         h += '<div class="cag-df-content">';
-        if (retailer) {
-            h += '<div class="cag-df-ptags">';
-            h += '<span class="cag-df-ptag">' + retailer + '</span>';
-            h += '</div>';
-        }
         if (isNews) {
             h += '<h2 style="font-size:20px;">' + title + '</h2>';
         } else {
             h += '<h2>' + title + '</h2>';
-            if (price) {
-                h += '<div style="margin-top:14px;">';
-                h += '<span class="cag-df-price">' + price + '</span>';
+            if (price || retailer) {
+                h += '<div class="cag-df-priceline" style="margin-top:14px;">';
+                if (price) h += '<span class="cag-df-price">' + price + '</span>';
+                if (retailer) h += '<span class="cag-df-retailer">' + retailer + '</span>';
                 h += '</div>';
             }
         }
