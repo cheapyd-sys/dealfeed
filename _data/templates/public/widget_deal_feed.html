@@ -145,15 +145,20 @@
 .cag-df-card.size-grid .cag-df-content { padding:12px; }
 .cag-df-card.size-small .cag-df-content { padding:16px; }
 
-/* Mobile: collapse the "secondary" tier (slots 2-3) down to the same look as
-   the regular grid cards. Without this, secondary's 200px-tall full-width
-   shape produced wide-and-short rectangles that cropped images aggressively
-   and sat awkwardly between the tall hero and the taller 4:3 grid cards. */
+/* Mobile: collapse the "secondary" (slot 2) and "small" (slot 3) tiers down
+   to the same look as the regular grid cards. Without this, slot 2 (200px)
+   and slot 3 (160px) were full-width-but-short rectangles between the hero
+   and the taller 4:3 grid cards — images cropped aggressively and the rhythm
+   felt broken. Hero stays full-size. */
 @media (max-width:699px) {
-  .cag-df-card.size-secondary { aspect-ratio:4/3; min-height:0; }
-  .cag-df-card.size-secondary h3 { font-size:13px; }
-  .cag-df-card.size-secondary .cag-df-price { font-size:15px; }
-  .cag-df-card.size-secondary .cag-df-content { padding:12px; }
+  .cag-df-card.size-secondary,
+  .cag-df-card.size-small { aspect-ratio:4/3; min-height:0; }
+  .cag-df-card.size-secondary h3,
+  .cag-df-card.size-small h4 { font-size:13px; }
+  .cag-df-card.size-secondary .cag-df-price,
+  .cag-df-card.size-small .cag-df-price { font-size:15px; }
+  .cag-df-card.size-secondary .cag-df-content,
+  .cag-df-card.size-small .cag-df-content { padding:12px; }
 }
 
 @media (min-width:700px) {
