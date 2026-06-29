@@ -145,6 +145,17 @@
 .cag-df-card.size-grid .cag-df-content { padding:12px; }
 .cag-df-card.size-small .cag-df-content { padding:16px; }
 
+/* Mobile: collapse the "secondary" tier (slots 2-3) down to the same look as
+   the regular grid cards. Without this, secondary's 200px-tall full-width
+   shape produced wide-and-short rectangles that cropped images aggressively
+   and sat awkwardly between the tall hero and the taller 4:3 grid cards. */
+@media (max-width:699px) {
+  .cag-df-card.size-secondary { aspect-ratio:4/3; min-height:0; }
+  .cag-df-card.size-secondary h3 { font-size:13px; }
+  .cag-df-card.size-secondary .cag-df-price { font-size:15px; }
+  .cag-df-card.size-secondary .cag-df-content { padding:12px; }
+}
+
 @media (min-width:700px) {
   .cag-df-card.size-hero      { grid-column:span 8; min-height:420px; }
   .cag-df-card.size-secondary { grid-column:span 4; }
@@ -838,6 +849,9 @@
         el.addEventListener('click', function(e) {
             e.preventDefault();
             var mode = el.dataset.sort;
+            // Picking a sort pill is a terminal action — close the dropdown
+            // either way so it doesn't linger over the freshly sorted feed.
+            closeAll();
             if (!mode || mode === selectedSort) return;
             selectedSort = mode;
             setSortPillActive();
