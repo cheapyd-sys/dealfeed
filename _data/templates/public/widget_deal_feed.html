@@ -176,12 +176,15 @@
   .cag-df-card.size-hero h2 { font-size:42px; }
 }
 
+/* Visual gap between the top ad and the dealfeed widget — applies on every
+   viewport so desktop also gets breathing room (preview page only). */
+body[data-template="cag_deal_feed_page"] .cag-top { margin-bottom:12px; }
+
 /* Close gap between top ad and widget on mobile (preview page only) */
 @media (max-width:768px) {
   body[data-template="cag_deal_feed_page"] .p-body { padding-top:4px; }
   body[data-template="cag_deal_feed_page"] .p-body-inner > .p-breadcrumbs:not(.p-breadcrumbs--bottom) { display:none; }
   body[data-template="cag_deal_feed_page"] .p-body-header { display:none; }
-  body[data-template="cag_deal_feed_page"] .cag-top { margin-bottom:12px; }
   body[data-template="cag_deal_feed_page"] .cag-df-wrap { padding:10px; }
 }
 
